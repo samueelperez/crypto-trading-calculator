@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ArrowDownIcon, ArrowUpIcon, RefreshCcwIcon, WifiOffIcon } from "lucide-react"
+import { ArrowDownIcon, ArrowUpIcon, RefreshCcwIcon, WifiOffIcon, Settings } from "lucide-react"
+import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,7 @@ export function PortfolioSummary() {
     refreshPrices,
     refreshData,
     portfolioWithPrices,
+    initialCapital,
   } = usePortfolio()
 
   // Estados para los precios actualizados y el resumen recalculado
@@ -38,6 +40,11 @@ export function PortfolioSummary() {
   // Estados para almacenar las horas formateadas (ahora en el cliente)
   const [formattedLastUpdate, setFormattedLastUpdate] = useState<string>("")
   const [formattedAPIUpdate, setFormattedAPIUpdate] = useState<string>("")
+
+  // Calcular la ganancia o pérdida real
+  const actualProfitLoss = summary ? summary.totalValue - initialCapital : 0
+  const actualProfitLossPercentage = initialCapital > 0 ? (actualProfitLoss / initialCapital) * 100 : 0
+  const isProfit = actualProfitLoss >= 0
 
   // Efecto para formatear las horas solo en el cliente
   useEffect(() => {
@@ -89,9 +96,9 @@ export function PortfolioSummary() {
         // Si tenemos un resumen y un valor total recalculado
         if (summary && newTotalValue > 0) {
           // Calcular el nuevo profit/loss
-          const newProfitLoss = newTotalValue - summary.totalInvestment
+          const newProfitLoss = newTotalValue - initialCapital
           const newProfitLossPercentage =
-            summary.totalInvestment > 0 ? (newProfitLoss / summary.totalInvestment) * 100 : 0
+            initialCapital > 0 ? (newProfitLoss / initialCapital) * 100 : 0
 
           // Actualizar el resumen
           const apiUpdateTime = new Date()
@@ -119,7 +126,7 @@ export function PortfolioSummary() {
     const interval = setInterval(updatePricesAndSummary, 120000)
 
     return () => clearInterval(interval)
-  }, [portfolioWithPrices, summary, isOffline])
+  }, [portfolioWithPrices, summary, isOffline, initialCapital])
 
   // Renderizar estado de error
   if (error) {
@@ -186,10 +193,6 @@ export function PortfolioSummary() {
     )
   }
 
-  const isPositive = summary ? summary.totalProfitLoss >= 0 : false
-  const positiveClass = isPositive ? "text-positive" : "text-negative"
-  const Icon = isPositive ? TrendingUp : TrendingDown
-
   return (
     <Card>
       <CardHeader>
@@ -211,23 +214,33 @@ export function PortfolioSummary() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <span className="text-sm text-muted-foreground">Inversión Inicial</span>
-              <div className="text-xl font-semibold">
-                {summary ? formatCurrency(summary.totalInvestment) : "$0.00"}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Establecido en configuración
-              </div>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Inversión Inicial</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(initialCapital)}</div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Link href="/dashboard/initial-capital" className="text-primary hover:underline flex items-center">
+                      <Settings className="h-3 w-3 mr-1" />
+                      Configurar en Dashboard
+                    </Link>
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground">Ganancia/Pérdida</span>
-              <div className={`text-xl font-semibold flex items-center ${positiveClass}`}>
-                <Icon className="mr-1 h-4 w-4" />
-                {summary ? formatCurrency(summary.totalProfitLoss) : "$0.00"}
+              <div className={`text-xl font-semibold flex items-center ${isProfit ? "text-positive" : "text-negative"}`}>
+                {isProfit 
+                  ? <TrendingUp className="mr-1 h-4 w-4" />
+                  : <TrendingDown className="mr-1 h-4 w-4" />
+                }
+                {formatCurrency(Math.abs(actualProfitLoss))}
               </div>
-              <div className={`text-xs ${positiveClass}`}>
-                {summary ? formatPercentage(summary.profitLossPercentage) : "0.00%"}
+              <div className={`text-xs ${isProfit ? "text-positive" : "text-negative"}`}>
+                {isProfit ? "+" : "-"}{formatPercentage(Math.abs(actualProfitLossPercentage))}
               </div>
             </div>
           </div>

@@ -151,15 +151,52 @@ export function usePortfolio() {
   useEffect(() => {
     const loadInitialCapital = async () => {
       try {
-        const amount = await userSettingsService.getInitialCapital();
-        console.log("Loaded initial capital:", amount);
-        setInitialCapital(amount);
+        // Cargar desde localStorage primero (para consistencia con initial-capital page)
+        const savedCapital = localStorage.getItem("initialCapital");
+        
+        if (savedCapital) {
+          const capital = Number.parseFloat(savedCapital);
+          console.log("Portfolio: Capital inicial cargado desde localStorage:", capital);
+          setInitialCapital(capital);
+        } else {
+          // Si no hay valor en localStorage, intentar cargar desde userSettingsService como respaldo
+          console.log("Portfolio: No hay capital inicial en localStorage, intentando desde userSettingsService");
+          const amount = await userSettingsService.getInitialCapital();
+          console.log("Portfolio: Capital inicial cargado desde userSettingsService:", amount);
+          setInitialCapital(amount);
+          
+          // Sincronizar con localStorage para futuras cargas
+          if (amount > 0) {
+            localStorage.setItem("initialCapital", amount.toString());
+          }
+        }
       } catch (error) {
         console.error("Error loading initial capital:", error);
       }
     };
     
     loadInitialCapital();
+    
+    // Escuchar eventos de cambio de capital inicial
+    window.addEventListener("storage", (event) => {
+      if (event.key === "initialCapital" && event.newValue) {
+        const capital = Number.parseFloat(event.newValue);
+        console.log("Portfolio: Capital inicial actualizado desde storage event:", capital);
+        setInitialCapital(capital);
+      }
+    });
+    
+    // También escuchar eventos personalizados
+    const unsubscribe = eventBus.subscribe(EVENTS.SETTINGS_UPDATED, (data) => {
+      if (data && 'initialCapital' in data) {
+        console.log("Portfolio: Recibido evento de actualización de capital inicial:", data.initialCapital);
+        setInitialCapital(data.initialCapital);
+      }
+    });
+    
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   // Escuchar actualizaciones de configuración
@@ -301,12 +338,22 @@ export function usePortfolio() {
       portfolioWithPricesRef.current = updatedPortfolio
       setPortfolioWithPrices(updatedPortfolio)
 
-      // Crear objeto de resumen
-      const summary: PortfolioSummary = {
-        totalValue: totalPortfolioValue,
-        totalInvestment: initialCapital,
-        totalProfitLoss: totalPortfolioValue - initialCapital,
-        profitLossPercentage: initialCapital > 0 ? ((totalPortfolioValue - initialCapital) / initialCapital) * 100 : 0,
+      // Calcular resumen global
+      const portfolioTotalValue = updatedPortfolio.reduce((sum, exchange) => sum + exchange.totalValue, 0);
+      const portfolioTotalInvestment = updatedPortfolio.reduce((sum, exchange) => sum + exchange.totalInvestment, 0);
+      
+      // Calcular PnL usando el capital inicial configurado por el usuario
+      const portfolioProfitLoss = portfolioTotalValue - initialCapital;
+      const portfolioProfitLossPercentage = initialCapital > 0 
+        ? (portfolioProfitLoss / initialCapital) * 100 
+        : 0;
+      
+      // Actualizar el resumen
+      const newSummary = {
+        totalValue: portfolioTotalValue,
+        totalInvestment: portfolioTotalInvestment, // Mantener esta propiedad como estaba 
+        totalProfitLoss: portfolioProfitLoss,      // Usar el cálculo basado en capital inicial
+        profitLossPercentage: portfolioProfitLossPercentage, // Usar el cálculo basado en capital inicial
         lastUpdated: new Date(),
         distribution: {
           byExchange: updatedPortfolio.map((exchange) => ({
@@ -341,9 +388,9 @@ export function usePortfolio() {
       })
 
       // Ordenar por valor (de mayor a menor)
-      summary.distribution.byAsset = assetDistribution.sort((a, b) => b.value - a.value)
+      newSummary.distribution.byAsset = assetDistribution.sort((a, b) => b.value - a.value)
 
-      setSummary(summary)
+      setSummary(newSummary)
       setLastUpdated(new Date())
 
       console.log("Portfolio updated with prices:", {
