@@ -5,7 +5,6 @@ import { PortfolioDistribution } from "@/components/portfolio/portfolio-distribu
 import { ExchangesList } from "@/components/portfolio/exchanges-list"
 import { PortfolioSkeleton } from "@/components/portfolio/portfolio-skeleton"
 import { SupabaseError } from "@/components/supabase-error"
-import { EditInitialCapital } from "@/components/portfolio/edit-initial-capital"
 
 export const metadata = {
   title: "Portfolio - CryptoTrader",
@@ -21,8 +20,6 @@ export default function PortfolioPage() {
           {/* ... existing buttons ... */}
         </div>
       </div>
-      
-      <EditInitialCapital />
       
       <SupabaseError />
 

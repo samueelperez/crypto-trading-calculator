@@ -10,7 +10,6 @@ import { WatchlistTable } from "@/components/dashboard/watchlist-table"
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { InvestmentForm } from "@/components/dashboard/investment-form"
 
 export default function DashboardPage() {
   return (
@@ -88,10 +87,6 @@ export default function DashboardPage() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <InvestmentForm />
-      </div>
     </div>
   )
 }

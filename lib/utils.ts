@@ -14,3 +14,11 @@ export function formatCurrency(value: number): string {
   }).format(value)
 }
 
+export function formatPercentage(value: number, digits = 2): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "percent",
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value / 100)
+}
+
