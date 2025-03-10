@@ -5,6 +5,7 @@ import { PortfolioDistribution } from "@/components/portfolio/portfolio-distribu
 import { ExchangesList } from "@/components/portfolio/exchanges-list"
 import { PortfolioSkeleton } from "@/components/portfolio/portfolio-skeleton"
 import { SupabaseError } from "@/components/supabase-error"
+import { EditInitialCapital } from "@/components/portfolio/edit-initial-capital"
 
 export const metadata = {
   title: "Portfolio - CryptoTrader",
@@ -13,11 +14,16 @@ export const metadata = {
 
 export default function PortfolioPage() {
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Portfolio</h1>
+        <h2 className="text-3xl font-bold tracking-tight">Portfolio</h2>
+        <div>
+          {/* ... existing buttons ... */}
+        </div>
       </div>
-
+      
+      <EditInitialCapital />
+      
       <SupabaseError />
 
       <Suspense fallback={<PortfolioSkeleton />}>

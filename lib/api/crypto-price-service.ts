@@ -8,13 +8,65 @@ const CACHE_TTL = 300000 // 5 minutes
 // Configuration flag to completely disable API calls
 const USE_MOCK_DATA_ONLY = true // Set to true to avoid all external API calls
 
+// Lista de stablecoins conocidas (todas deberían valer $1.00)
+const STABLECOINS = [
+  'usdt', 'usdc', 'dai', 'busd', 'tusd', 'usdp', 'usdd', 'gusd', 'frax', 'lusd', 'susd'
+];
+
+/**
+ * Verifica si un símbolo pertenece a una stablecoin conocida
+ */
+const isStablecoin = (symbol: string): boolean => {
+  return STABLECOINS.includes(symbol.toLowerCase());
+};
+
 export const cryptoPriceService = {
   // Obtener precios actuales para una lista de símbolos
   async getPrices(symbols: string[]): Promise<Record<string, CryptoPrice>> {
+    console.log("CryptoPriceService: Getting prices for", symbols);
+    
+    // Si no hay símbolos, retornar objeto vacío
+    if (!symbols || symbols.length === 0) {
+      return {};
+    }
+    
+    // Verificar si podemos usar la caché
+    const now = Date.now();
+    const cachedPrices: Record<string, CryptoPrice> = {};
+    let needToFetchSymbols: string[] = [];
+    
+    // Verificar qué símbolos necesitamos obtener
+    for (const symbol of symbols) {
+      // Si es una stablecoin, usamos precio fijo de $1.00
+      if (isStablecoin(symbol)) {
+        cachedPrices[symbol] = {
+          current_price: 1.0,
+          price_change_percentage_24h: 0,
+          last_updated: new Date().toISOString(),
+          is_stablecoin: true
+        };
+        continue;
+      }
+      
+      // Para otras cryptos, revisamos la caché
+      const cacheKey = `price_${symbol.toLowerCase()}`;
+      const cachedItem = priceCache[symbol];
+      
+      if (cachedItem && now - cachedItem.timestamp < CACHE_TTL) {
+        cachedPrices[symbol] = cachedItem.price;
+      } else {
+        needToFetchSymbols.push(symbol);
+      }
+    }
+    
+    // Si todos los símbolos están en caché, retornar inmediatamente
+    if (needToFetchSymbols.length === 0) {
+      return cachedPrices;
+    }
+    
     try {
       // Filtrar símbolos que necesitan actualización
-      const now = Date.now()
-      const symbolsToFetch = symbols.filter(
+      const symbolsToFetch = needToFetchSymbols.filter(
         (symbol) => !priceCache[symbol] || now - priceCache[symbol].timestamp > CACHE_TTL,
       )
 

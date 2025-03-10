@@ -14,8 +14,9 @@ export interface CoinInfo {
 // Configuration flag to completely disable API calls
 const USE_MOCK_DATA_ONLY = true
 
-export const coingeckoService = {
-  // Obtener lista completa de monedas
+// Clase del servicio
+class CoinGeckoService {
+  // Método para obtener lista de monedas
   async getCoinsList(): Promise<CoinInfo[]> {
     const now = Date.now()
 
@@ -39,9 +40,9 @@ export const coingeckoService = {
       if (coinListCache) return coinListCache
       throw error
     }
-  },
+  }
 
-  // Buscar monedas por término
+  // Método para buscar monedas
   async searchCoins(term: string): Promise<CoinInfo[]> {
     if (!term.trim()) return []
 
@@ -68,13 +69,13 @@ export const coingeckoService = {
     return coins.filter(
       (coin) => coin.symbol.toLowerCase().includes(lowerTerm) || coin.name.toLowerCase().includes(lowerTerm),
     )
-  },
+  }
 }
 
-// Función para simular la respuesta de la API de CoinGecko
+// Función para simular datos de la API de CoinGecko
 async function simulateCoinGeckoAPI(): Promise<CoinInfo[]> {
-  // Simular un retraso de red más corto
-  await new Promise((resolve) => setTimeout(resolve, 100))
+  // Simular un pequeño retraso de red
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
   // Lista de las principales criptomonedas con sus logos
   return [
@@ -109,9 +110,9 @@ async function simulateCoinGeckoAPI(): Promise<CoinInfo[]> {
     {
       id: "binancecoin",
       symbol: "bnb",
-      name: "Binance Coin",
+      name: "BNB",
       image: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
-      current_price: 350,
+      current_price: 320,
     },
     {
       id: "solana",
@@ -125,28 +126,28 @@ async function simulateCoinGeckoAPI(): Promise<CoinInfo[]> {
       symbol: "xrp",
       name: "XRP",
       image: "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png",
-      current_price: 0.5,
+      current_price: 0.52,
     },
     {
       id: "cardano",
       symbol: "ada",
       name: "Cardano",
       image: "https://assets.coingecko.com/coins/images/975/large/cardano.png",
-      current_price: 0.55,
+      current_price: 0.43,
     },
     {
       id: "dogecoin",
       symbol: "doge",
       name: "Dogecoin",
       image: "https://assets.coingecko.com/coins/images/5/large/dogecoin.png",
-      current_price: 0.08,
+      current_price: 0.12,
     },
     {
       id: "polkadot",
       symbol: "dot",
       name: "Polkadot",
       image: "https://assets.coingecko.com/coins/images/12171/large/polkadot.png",
-      current_price: 12,
+      current_price: 7.1,
     },
     {
       id: "avalanche-2",
@@ -290,4 +291,7 @@ async function simulateCoinGeckoAPI(): Promise<CoinInfo[]> {
     },
   ]
 }
+
+// Exportar una instancia del servicio para uso en toda la aplicación
+export const coinGeckoService = new CoinGeckoService()
 

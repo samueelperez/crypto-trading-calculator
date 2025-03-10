@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePortfolio } from "@/hooks/use-portfolio"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, formatPercentage } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { cryptoPriceService } from "@/lib/api/crypto-price-service"
+import { TrendingDown, TrendingUp } from "lucide-react"
 
 export function PortfolioSummary() {
   const {
@@ -33,6 +34,23 @@ export function PortfolioSummary() {
     profitLossPercentage: number
     lastUpdatedFromAPI: Date
   } | null>(null)
+  
+  // Estados para almacenar las horas formateadas (ahora en el cliente)
+  const [formattedLastUpdate, setFormattedLastUpdate] = useState<string>("")
+  const [formattedAPIUpdate, setFormattedAPIUpdate] = useState<string>("")
+
+  // Efecto para formatear las horas solo en el cliente
+  useEffect(() => {
+    // Formatear lastUpdated
+    if (lastUpdated) {
+      setFormattedLastUpdate(lastUpdated.toLocaleTimeString())
+    }
+    
+    // Formatear API update time si existe
+    if (updatedSummary?.lastUpdatedFromAPI) {
+      setFormattedAPIUpdate(updatedSummary.lastUpdatedFromAPI.toLocaleTimeString())
+    }
+  }, [lastUpdated, updatedSummary])
 
   // Efecto para actualizar los precios y recalcular el resumen
   useEffect(() => {
@@ -76,12 +94,16 @@ export function PortfolioSummary() {
             summary.totalInvestment > 0 ? (newProfitLoss / summary.totalInvestment) * 100 : 0
 
           // Actualizar el resumen
+          const apiUpdateTime = new Date()
           setUpdatedSummary({
             totalValue: newTotalValue,
             totalProfitLoss: newProfitLoss,
             profitLossPercentage: newProfitLossPercentage,
-            lastUpdatedFromAPI: new Date(),
+            lastUpdatedFromAPI: apiUpdateTime,
           })
+          
+          // Actualizar el formato de la hora inmediatamente
+          setFormattedAPIUpdate(apiUpdateTime.toLocaleTimeString())
         }
       } catch (error) {
         console.error("Error updating prices:", error)
@@ -98,9 +120,6 @@ export function PortfolioSummary() {
 
     return () => clearInterval(interval)
   }, [portfolioWithPrices, summary, isOffline])
-
-  const formattedLastUpdate = lastUpdated.toLocaleTimeString()
-  const formattedAPIUpdate = updatedSummary?.lastUpdatedFromAPI.toLocaleTimeString()
 
   // Renderizar estado de error
   if (error) {
@@ -136,111 +155,81 @@ export function PortfolioSummary() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Resumen del Portfolio</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const isPositive = summary ? summary.totalProfitLoss >= 0 : false
+  const positiveClass = isPositive ? "text-positive" : "text-negative"
+  const Icon = isPositive ? TrendingUp : TrendingDown
+
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Portfolio Summary</CardTitle>
-            <CardDescription className="flex items-center">
-              {updatedSummary ? (
-                <>
-                  Last updated from API: {formattedAPIUpdate}
-                  {isUpdatingPrices && <span className="ml-2 text-muted-foreground">(actualizando...)</span>}
-                </>
-              ) : (
-                <>Last updated: {formattedLastUpdate}</>
-              )}
-              {isOffline && (
-                <span className="ml-2 flex items-center text-amber-500">
-                  <WifiOffIcon className="mr-1 h-4 w-4" />
-                  Offline
-                </span>
-              )}
-            </CardDescription>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={updatedSummary ? () => setIsUpdatingPrices(true) : refreshData}
-            disabled={isLoading || isUpdatingPrices || isOffline}
-          >
-            <RefreshCcwIcon className={cn("mr-2 h-4 w-4", (isLoading || isUpdatingPrices) && "animate-spin")} />
-            Refresh
-          </Button>
-        </div>
+      <CardHeader>
+        <CardTitle className="text-lg">Resumen del Portfolio</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-6">
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Total Value</p>
-            {isLoading ? (
-              <Skeleton className="h-8 w-28" />
-            ) : (
-              <p className="text-2xl font-bold">
-                {updatedSummary ? formatCurrency(updatedSummary.totalValue) : formatCurrency(summary?.totalValue || 0)}
-                {updatedSummary && <span className="text-xs ml-1 text-muted-foreground">(actualizado)</span>}
-              </p>
-            )}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Valor Total</span>
+              <span className="text-xs text-muted-foreground">
+                Actualizado {summary?.lastUpdated ? new Date(summary.lastUpdated).toLocaleTimeString() : ""}
+              </span>
+            </div>
+            <div className="text-3xl font-bold">
+              {summary ? formatCurrency(summary.totalValue) : "$0.00"}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Total Investment</p>
-            {isLoading ? (
-              <Skeleton className="h-8 w-28" />
-            ) : (
-              <p className="text-2xl font-bold">{formatCurrency(summary?.totalInvestment || 0)}</p>
-            )}
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Inversión Inicial</span>
+              <div className="text-xl font-semibold">
+                {summary ? formatCurrency(summary.totalInvestment) : "$0.00"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Establecido en configuración
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Profit/Loss</p>
-            {isLoading ? (
-              <Skeleton className="h-8 w-28" />
-            ) : summary ? (
-              <p
-                className={cn(
-                  "text-2xl font-bold flex items-center",
-                  (updatedSummary ? updatedSummary.totalProfitLoss : summary.totalProfitLoss) >= 0
-                    ? "text-positive"
-                    : "text-negative",
-                )}
-              >
-                {(updatedSummary ? updatedSummary.totalProfitLoss : summary.totalProfitLoss) >= 0 ? (
-                  <ArrowUpIcon className="mr-1 h-5 w-5" />
-                ) : (
-                  <ArrowDownIcon className="mr-1 h-5 w-5" />
-                )}
-                {formatCurrency(Math.abs(updatedSummary ? updatedSummary.totalProfitLoss : summary.totalProfitLoss))}
-                {updatedSummary && <span className="text-xs ml-1 text-muted-foreground">(actualizado)</span>}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Profit/Loss %</p>
-            {isLoading ? (
-              <Skeleton className="h-8 w-28" />
-            ) : summary ? (
-              <p
-                className={cn(
-                  "text-2xl font-bold flex items-center",
-                  (updatedSummary ? updatedSummary.profitLossPercentage : summary.profitLossPercentage) >= 0
-                    ? "text-positive"
-                    : "text-negative",
-                )}
-              >
-                {(updatedSummary ? updatedSummary.profitLossPercentage : summary.profitLossPercentage) >= 0 ? (
-                  <ArrowUpIcon className="mr-1 h-5 w-5" />
-                ) : (
-                  <ArrowDownIcon className="mr-1 h-5 w-5" />
-                )}
-                {Math.abs(updatedSummary ? updatedSummary.profitLossPercentage : summary.profitLossPercentage).toFixed(
-                  2,
-                )}
-                %{updatedSummary && <span className="text-xs ml-1 text-muted-foreground">(actualizado)</span>}
-              </p>
-            ) : null}
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Ganancia/Pérdida</span>
+              <div className={`text-xl font-semibold flex items-center ${positiveClass}`}>
+                <Icon className="mr-1 h-4 w-4" />
+                {summary ? formatCurrency(summary.totalProfitLoss) : "$0.00"}
+              </div>
+              <div className={`text-xs ${positiveClass}`}>
+                {summary ? formatPercentage(summary.profitLossPercentage) : "0.00%"}
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>

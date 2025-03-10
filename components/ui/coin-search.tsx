@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { coingeckoService, type CoinInfo } from "@/lib/api/coingecko-service"
+import { coinGeckoService, type CoinInfo } from "@/lib/api/coingecko-service"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface CoinSearchProps {
@@ -24,57 +24,54 @@ export function CoinSearch({ onSelect, placeholder = "Search for a coin..." }: C
 
   // Cargar monedas populares al inicio
   React.useEffect(() => {
-    const loadPopularCoins = async () => {
+    const loadInitialOptions = async () => {
       setLoading(true)
       try {
         // Asegurarnos de que USDT y otras stablecoins estén en la lista inicial
         const popularSymbols = ["BTC", "ETH", "USDT", "USDC", "BNB", "SOL", "XRP", "ADA", "DOGE"]
-        const results = await Promise.all(popularSymbols.map((symbol) => coingeckoService.searchCoins(symbol)))
+        const results = await Promise.all(popularSymbols.map((symbol) => coinGeckoService.searchCoins(symbol)))
 
         // Aplanar y eliminar duplicados
         const flatResults = results.flat()
-        const uniqueCoins = flatResults.filter((coin, index, self) => index === self.findIndex((c) => c.id === coin.id))
 
-        setCoins(uniqueCoins.slice(0, 10))
+        // Eliminar duplicados por ID
+        const uniqueOptions = Array.from(new Map(flatResults.map((item) => [item.id, item])).values())
+        setCoins(uniqueOptions.slice(0, 10))
       } catch (error) {
-        console.error("Error loading popular coins:", error)
+        console.error("Error loading initial options:", error)
       } finally {
         setLoading(false)
       }
     }
 
     if (open && coins.length === 0 && !searchTerm) {
-      loadPopularCoins()
+      loadInitialOptions()
     }
   }, [open, coins.length, searchTerm])
 
   // Buscar monedas cuando cambia el término de búsqueda
   React.useEffect(() => {
-    const searchCoins = async () => {
-      // Si no hay término de búsqueda y ya tenemos monedas cargadas, no hacer nada
+    const handleSearch = async () => {
       if (!searchTerm.trim() && coins.length > 0) {
         return
       }
 
-      // Si no hay término de búsqueda y no tenemos monedas, mostrar las populares
       if (!searchTerm.trim() && coins.length === 0) {
         return
       }
 
       setLoading(true)
       try {
-        // Asegurarnos de que USDT se incluya si la búsqueda coincide
-        let results = await coingeckoService.searchCoins(searchTerm)
+        let results = await coinGeckoService.searchCoins(searchTerm)
 
-        // Si buscamos algo que podría ser USDT y no está en los resultados, forzar su inclusión
         if (searchTerm.toLowerCase().includes("usdt") || searchTerm.toLowerCase().includes("tether")) {
-          const usdtResults = await coingeckoService.searchCoins("USDT")
+          const usdtResults = await coinGeckoService.searchCoins("USDT")
           if (usdtResults.length > 0 && !results.some((coin) => coin.symbol.toUpperCase() === "USDT")) {
             results = [...usdtResults, ...results]
           }
         }
 
-        setCoins(results.slice(0, 10)) // Limitar a 10 resultados para mejor rendimiento
+        setCoins(results.slice(0, 10))
       } catch (error) {
         console.error("Error searching coins:", error)
         setCoins([])
@@ -83,8 +80,7 @@ export function CoinSearch({ onSelect, placeholder = "Search for a coin..." }: C
       }
     }
 
-    // Debounce para evitar demasiadas llamadas a la API
-    const handler = setTimeout(searchCoins, 300)
+    const handler = setTimeout(handleSearch, 300)
     return () => clearTimeout(handler)
   }, [searchTerm, coins.length])
 

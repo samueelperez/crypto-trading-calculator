@@ -10,12 +10,13 @@ import { WatchlistTable } from "@/components/dashboard/watchlist-table"
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { InvestmentForm } from "@/components/dashboard/investment-form"
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
@@ -87,6 +88,10 @@ export default function DashboardPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <InvestmentForm />
+      </div>
     </div>
   )
 }
