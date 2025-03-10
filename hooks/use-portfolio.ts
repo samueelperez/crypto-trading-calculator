@@ -7,10 +7,15 @@ import { cryptoPriceService } from "@/lib/api/crypto-price-service"
 import { checkSupabaseCredentials } from "@/lib/supabase/client"
 import { eventBus, EVENTS } from "@/lib/event-bus"
 import { userSettingsService } from "@/lib/supabase/user-settings-service"
-
 // Configuración para reintentos
 const MAX_RETRIES = 3
 const RETRY_DELAY = 1000 // ms
+
+interface AssetDistributionItem {
+  symbol: string;
+  value: number;
+  percentage: number;
+}
 
 export function usePortfolio() {
   const [exchanges, setExchanges] = useState<Exchange[]>([])
@@ -281,6 +286,7 @@ export function usePortfolio() {
               profitLoss: 0, // No hay ganancia/pérdida en stablecoins
               profitLossPercentage: 0,
               lastUpdated: new Date(),
+              logo_url: asset.logo_url || undefined
             }
           }
           
@@ -305,6 +311,7 @@ export function usePortfolio() {
               profitLoss,
               profitLossPercentage,
               lastUpdated: new Date(),
+              logo_url: asset.logo_url || undefined
             }
           }
 
@@ -323,6 +330,7 @@ export function usePortfolio() {
             profitLoss: 0,
             profitLossPercentage: 0,
             lastUpdated: new Date(),
+            logo_url: asset.logo_url || undefined
           }
         })
 
@@ -340,7 +348,6 @@ export function usePortfolio() {
 
       // Calcular resumen global
       const portfolioTotalValue = updatedPortfolio.reduce((sum, exchange) => sum + exchange.totalValue, 0);
-      const portfolioTotalInvestment = updatedPortfolio.reduce((sum, exchange) => sum + exchange.totalInvestment, 0);
       
       // Calcular PnL usando el capital inicial configurado por el usuario
       const portfolioProfitLoss = portfolioTotalValue - initialCapital;
@@ -351,9 +358,9 @@ export function usePortfolio() {
       // Actualizar el resumen
       const newSummary = {
         totalValue: portfolioTotalValue,
-        totalInvestment: portfolioTotalInvestment, // Mantener esta propiedad como estaba 
-        totalProfitLoss: portfolioProfitLoss,      // Usar el cálculo basado en capital inicial
-        profitLossPercentage: portfolioProfitLossPercentage, // Usar el cálculo basado en capital inicial
+        totalInvestment: initialCapital,
+        totalProfitLoss: portfolioProfitLoss,
+        profitLossPercentage: portfolioProfitLossPercentage,
         lastUpdated: new Date(),
         distribution: {
           byExchange: updatedPortfolio.map((exchange) => ({
@@ -362,13 +369,13 @@ export function usePortfolio() {
             value: exchange.totalValue,
             percentage: totalPortfolioValue > 0 ? (exchange.totalValue / totalPortfolioValue) * 100 : 0,
           })),
-          byAsset: [],
+          byAsset: [] as AssetDistributionItem[],
         },
       }
 
       // Calcular distribución por asset
-      const assetDistribution = []
-      const assetTotals = new Map<string, number>()
+      const assetDistribution: AssetDistributionItem[] = [];
+      const assetTotals = new Map<string, number>();
 
       // Agregar valores por símbolo a través de todos los exchanges
       updatedPortfolio.forEach((exchange) => {
@@ -455,7 +462,8 @@ export function usePortfolio() {
               currentValue: initialValue,
               profitLoss: 0,
               profitLossPercentage: 0,
-              lastUpdated: new Date()
+              lastUpdated: new Date(),
+              logo_url: asset.logo_url || undefined
             }
           })
           
@@ -563,6 +571,7 @@ export function usePortfolio() {
             profitLoss: 0,
             profitLossPercentage: 0,
             lastUpdated: new Date(),
+            logo_url: asset.logo_url || undefined
           };
         });
         
@@ -723,12 +732,28 @@ export function usePortfolio() {
       assetsRef.current = updatedAssets;
       setAssets(updatedAssets);
 
-      // Actualizar también portfolioWithPrices para que la UI se actualice
-      const newExchangeWithAssets: ExchangeWithAssets = {
-        ...exchangesRef.current.find(ex => ex.id === asset.exchange_id)!,
-        assets: [newAsset],
-        totalValue: newAsset.currentValue,
+      // Convertir el asset básico a AssetWithValue con las propiedades requeridas
+      const quantity = Number(newAsset.quantity);
+      const purchasePrice = Number(newAsset.purchase_price_avg);
+      const initialValue = quantity * purchasePrice;
+      
+      // Crear una versión del asset que cumpla con el tipo AssetWithValue
+      const newAssetWithValues: AssetWithValue = {
+        ...newAsset,
+        currentPrice: purchasePrice, // Inicialmente usamos el precio de compra
+        currentValue: initialValue,
+        profitLoss: 0,
+        profitLossPercentage: 0,
+        lastUpdated: new Date(),
+        logo_url: newAsset.logo_url || undefined
       };
+
+      const newExchangeWithAssets: ExchangeWithAssets = {
+        ...exchangesRef.current.find(ex => ex.id === newAsset.exchange_id)!,
+        assets: [newAssetWithValues],
+        totalValue: newAssetWithValues.currentValue,
+      };
+
       setPortfolioWithPrices((prev) => [...prev, newExchangeWithAssets]);
 
       return newAsset;
@@ -800,7 +825,8 @@ export function usePortfolio() {
                 profitLossPercentage: purchasePrice > 0 
                   ? ((a.currentPrice || purchasePrice) - purchasePrice) / purchasePrice * 100 
                   : 0,
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
+                logo_url: a.logo_url || undefined
               };
               
               return updatedAssetWithValues;
