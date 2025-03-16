@@ -3,8 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
-type Params = { id: string }
-
 export const dynamic = 'force-dynamic'
 
 /**
@@ -13,10 +11,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Params }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id = context.params.id
     console.log(`GET /api/journal/${id}`)
 
     // Validar ID
@@ -79,10 +77,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id = context.params.id
     console.log(`PUT /api/journal/${id}`)
 
     // Validar ID
@@ -164,10 +162,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id = context.params.id
     console.log(`DELETE /api/journal/${id}`)
 
     // Validar ID
