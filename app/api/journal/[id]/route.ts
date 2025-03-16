@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
+type Params = { id: string }
+
 export const dynamic = 'force-dynamic'
 
 /**
@@ -32,7 +34,7 @@ export async function GET(
     const { data: entry, error } = await supabase
       .from('journal_entries')
       .select('*')
-      .eq('id', id)
+      .eq('id', id as any)
       .single()
 
     // Manejar error de consulta
@@ -111,7 +113,7 @@ export async function PUT(
     const { data: existingEntry, error: fetchError } = await supabase
       .from('journal_entries')
       .select('id')
-      .eq('id', id)
+      .eq('id', id as any)
       .single()
 
     if (fetchError || !existingEntry) {
@@ -126,7 +128,7 @@ export async function PUT(
     const { data: updatedEntry, error: updateError } = await supabase
       .from('journal_entries')
       .update(body)
-      .eq('id', id)
+      .eq('id', id as any)
       .select()
       .single()
 
@@ -183,7 +185,7 @@ export async function DELETE(
     const { data: existingEntry, error: fetchError } = await supabase
       .from('journal_entries')
       .select('id')
-      .eq('id', id)
+      .eq('id', id as any)
       .single()
 
     if (fetchError || !existingEntry) {
@@ -198,7 +200,7 @@ export async function DELETE(
     const { error: deleteError } = await supabase
       .from('journal_entries')
       .delete()
-      .eq('id', id)
+      .eq('id', id as any)
 
     // Manejar error de eliminación
     if (deleteError) {
