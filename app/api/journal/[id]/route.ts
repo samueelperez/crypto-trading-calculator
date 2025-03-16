@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
  * Recupera una entrada específica del diario por su ID
  */
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -76,7 +76,7 @@ export async function GET(
  * Actualiza una entrada existente del diario
  */
 export async function PUT(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -161,7 +161,7 @@ export async function PUT(
  * Elimina una entrada del diario
  */
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
