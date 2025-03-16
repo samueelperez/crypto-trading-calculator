@@ -1,5 +1,5 @@
 // Sistema simple de eventos para comunicación entre componentes
-type EventCallback = (...args: any[]) => void
+type EventCallback = (data?: any) => void
 
 interface EventMap {
   [eventName: string]: EventCallback[]
@@ -27,8 +27,8 @@ class EventBus {
   /**
    * Publicar un evento
    */
-  publish(event: string, ...args: any[]): void {
-    console.log(`EventBus: Publishing event "${event}"`, args)
+  publish(event: string, data?: any): void {
+    console.log(`EventBus: Publishing event "${event}"`, data ? data : '')
     
     if (!this.events[event]) {
       return
@@ -36,7 +36,7 @@ class EventBus {
 
     this.events[event].forEach((callback) => {
       try {
-        callback(...args)
+        callback(data)
       } catch (error) {
         console.error(`Error in event listener for ${event}:`, error)
       }
@@ -56,5 +56,6 @@ export const EVENTS = {
   ASSET_UPDATED: "ASSET_UPDATED",
   ASSET_DELETED: "ASSET_DELETED",
   PORTFOLIO_REFRESHED: "PORTFOLIO_REFRESHED",
+  PORTFOLIO_VALUE_UPDATED: "portfolio_value_updated",
   SETTINGS_UPDATED: "SETTINGS_UPDATED",
 } 

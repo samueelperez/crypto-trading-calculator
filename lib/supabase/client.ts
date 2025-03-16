@@ -1,37 +1,42 @@
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "@/types/supabase"
 
-// Replace the current supabase client creation with a singleton pattern
+// Obtener variables de entorno
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Create a singleton instance of the Supabase client
-let supabaseInstance: ReturnType<typeof createClient> | null = null
+// Verificar que las variables de entorno estén definidas
+if (!supabaseUrl || !supabaseKey) {
+  console.error(
+    'Error: Variables de entorno de Supabase no están definidas correctamente.',
+    {
+      supabaseUrl: supabaseUrl ? 'Definido' : 'No definido',
+      supabaseKey: supabaseKey ? 'Definido' : 'No definido',
+    }
+  )
+}
 
-// Usar valores por defecto para evitar errores durante la inicialización
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-
-// Function to get the Supabase client instance
-export const supabase = (() => {
-  if (supabaseInstance) return supabaseInstance
-
-  // Create a new instance if one doesn't exist
-  supabaseInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+// Crear cliente de Supabase solo si tenemos las variables requeridas
+export const supabase = supabaseUrl && supabaseKey 
+  ? createClient<Database>(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
     },
   })
+  : null
 
-  return supabaseInstance
-})()
+// Función para verificar si las credenciales están disponibles
+export function checkSupabaseCredentials(): boolean {
+  return !!supabaseUrl && !!supabaseKey
+}
 
-// Función para verificar si las credenciales están configuradas
-export function checkSupabaseCredentials() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  // Verificar que las variables existan y no estén vacías
-  return Boolean(url && url.trim() !== "" && key && key.trim() !== "")
+// Función para obtener un cliente garantizado (lanza error si no está disponible)
+export function getSupabaseClient() {
+  if (!supabase) {
+    throw new Error('Cliente Supabase no disponible. Verifica las variables de entorno.')
+  }
+  return supabase
 }
 
 // Función para verificar si el cliente tiene acceso a la base de datos

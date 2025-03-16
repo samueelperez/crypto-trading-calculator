@@ -410,6 +410,31 @@ export function usePortfolio() {
       // Publicar evento de actualización de precios
       eventBus.publish(EVENTS.PORTFOLIO_REFRESHED, updatedPortfolio)
 
+      // Guardar el valor del portfolio en localStorage
+      if (portfolioTotalValue > 0) {
+        console.log("Guardando valor del portfolio en localStorage:", portfolioTotalValue);
+        
+        // Guardar directamente en localStorage para acceso inmediato
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user_settings_portfolio_value', portfolioTotalValue.toString());
+        }
+        
+        // También guardar a través del servicio (que también usa localStorage)
+        userSettingsService.updatePortfolioValue(portfolioTotalValue)
+          .then(success => {
+            if (success) {
+              console.log("Valor del portfolio guardado con éxito");
+              // Emitir un evento específico para la actualización del valor del portfolio
+              eventBus.publish(EVENTS.PORTFOLIO_VALUE_UPDATED, { value: portfolioTotalValue });
+            } else {
+              console.warn("No se pudo guardar el valor del portfolio");
+            }
+          })
+          .catch(err => {
+            console.error("Error al guardar valor del portfolio:", err);
+          });
+      }
+
       return { success: true }
     } catch (error) {
       console.error("Error updating prices:", error)
