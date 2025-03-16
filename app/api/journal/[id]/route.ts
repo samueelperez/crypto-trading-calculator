@@ -11,10 +11,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id
+    const id = params.id
     console.log(`GET /api/journal/${id}`)
 
     // Validar ID
@@ -77,10 +77,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id
+    const id = params.id
     console.log(`PUT /api/journal/${id}`)
 
     // Validar ID
@@ -162,10 +162,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id
+    const id = params.id
     console.log(`DELETE /api/journal/${id}`)
 
     // Validar ID
@@ -223,4 +223,4 @@ export async function DELETE(
       { status: 500 }
     )
   }
-} 
+}
