@@ -1,6 +1,6 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +10,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     
     // Convertir el string ID a UUID o número según corresponda
     const entryId = params.id
@@ -50,7 +51,8 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     const entryId = params.id
 
     const { data, error } = await supabase
@@ -81,7 +83,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     const entryId = params.id
 
     const { error } = await supabase
