@@ -1,19 +1,21 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
+interface Params {
+  params: {
+    id: string
+  }
+}
+
 // GET: Obtener una entrada de journal por ID
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: Params) {
   try {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Convertir el string ID a UUID o número según corresponda
     const entryId = params.id
     
     const { data, error } = await supabase
@@ -45,10 +47,7 @@ export async function GET(
 }
 
 // PUT: Actualizar una entrada de journal
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const body = await request.json()
     const cookieStore = cookies()
@@ -78,10 +77,7 @@ export async function PUT(
 }
 
 // DELETE: Eliminar una entrada de journal
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: Params) {
   try {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
