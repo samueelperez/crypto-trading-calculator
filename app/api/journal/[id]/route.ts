@@ -1,14 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
 
 // Obtener una entrada de journal por ID
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
-    const supabase = createClient();
+    const id = context.params.id;
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
 
     const { data, error } = await supabase
       .from('journal_entries')
@@ -42,13 +46,14 @@ export async function GET(
 
 // Actualizar una entrada de journal por ID
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const id = context.params.id;
     const body = await request.json();
-    const supabase = createClient();
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
 
     const { data, error } = await supabase
       .from('journal_entries')
@@ -76,12 +81,13 @@ export async function PUT(
 
 // Eliminar una entrada de journal por ID
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
-    const supabase = createClient();
+    const id = context.params.id;
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
 
     const { error } = await supabase
       .from('journal_entries')
