@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu } from "lucide-react"
+import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -13,41 +14,21 @@ export function Navbar() {
   const pathname = usePathname()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">CryptoTrader</span>
+    <header className="border-b bg-background">
+      <div className="flex h-16 items-center px-4 sm:px-6">
+        <div className="mr-4 flex">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/icons/icon-72x72.png"
+              alt="Crypto Trading"
+              width={40}
+              height={40}
+              className="mr-2"
+            />
+            <span className="hidden font-bold sm:inline-block">
+              Crypto Trading
+            </span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link
-              href="/dashboard"
-              className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === "/dashboard" ? "text-foreground" : "text-foreground/60",
-              )}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/journal"
-              className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === "/journal" ? "text-foreground" : "text-foreground/60",
-              )}
-            >
-              Journal
-            </Link>
-            <Link
-              href="/calculator"
-              className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === "/calculator" ? "text-foreground" : "text-foreground/60",
-              )}
-            >
-              Calculator
-            </Link>
-          </nav>
         </div>
 
         <Sheet>

@@ -23,16 +23,22 @@ export default function PortfolioPage() {
       
       <SupabaseError />
 
-      <Suspense fallback={<PortfolioSkeleton />}>
-        <PortfolioSummary />
+      <div className="container mx-auto px-2 sm:px-4">
+        <div className="grid gap-4">
+          <div className="w-full overflow-hidden rounded-lg border">
+            <Suspense fallback={<PortfolioSkeleton />}>
+              <PortfolioSummary />
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <PortfolioDistribution type="exchange" />
-          <PortfolioDistribution type="asset" />
+              <div className="grid gap-6 md:grid-cols-2">
+                <PortfolioDistribution type="exchange" />
+                <PortfolioDistribution type="asset" />
+              </div>
+
+              <ExchangesList />
+            </Suspense>
+          </div>
         </div>
-
-        <ExchangesList />
-      </Suspense>
+      </div>
     </div>
   )
 }

@@ -84,7 +84,10 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false
+  minimumScale: 1,
+  userScalable: false,
+  // Prevenir zoom automático en inputs en iOS
+  viewportFit: 'cover'
 }
 
 export default function RootLayout({
