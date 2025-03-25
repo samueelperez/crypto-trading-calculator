@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/layout/navbar"
 // Importar el componente cliente que maneja la carga dinámica
 import DynamicSidebar from "@/components/layout/dynamic-sidebar"
+import CriticalStyles from "@/components/layout/critical-styles"
 import { Toaster } from "@/components/ui/toaster"
 
 import "@/app/globals.css"
@@ -102,15 +103,10 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        {/* Inlining estilos críticos */}
-        <style jsx global>{`
-          :root {
-            --background: 224 71% 4%;
-            --foreground: 213 31% 91%;
-          }
-        `}</style>
       </head>
       <body className={inter.className}>
+        {/* Componente cliente para estilos críticos */}
+        <CriticalStyles />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Navbar />
