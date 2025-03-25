@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next/types"
+import type { Metadata, Viewport } from "next/types"
 import { Inter } from "next/font/google"
 import ClientLayout from "./client-layout"
 
@@ -12,11 +12,11 @@ const inter = Inter({
   preload: true
 })
 
+// Metadatos base de la aplicación
 export const metadata: Metadata = {
   title: 'Crypto Trading Platform',
   description: 'Una plataforma completa para trading de criptomonedas',
   manifest: '/manifest.json',
-  themeColor: '#2563EB',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -55,12 +55,6 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false
-  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -82,6 +76,15 @@ export const metadata: Metadata = {
   other: {
     'apple-mobile-web-app-capable': 'yes'
   }
+}
+
+// Configuración del viewport (separada según recomendación de Next.js 15)
+export const viewport: Viewport = {
+  themeColor: '#2563EB',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
 }
 
 export default function RootLayout({
