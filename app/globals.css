@@ -37,6 +37,12 @@
     --chart-3: 43.3 96.4% 56.3%;
     --chart-4: 262.1 83.3% 57.8%;
     --chart-5: 24.6 95% 53.1%;
+
+    /* Safe area variables for iOS devices */
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
   }
 
   .dark {
@@ -118,5 +124,29 @@ table, .overflow-auto {
 * {
   box-sizing: border-box;
   word-break: break-word;
+}
+
+/* Ajustes para PWA en iOS - Safe Areas */
+.safe-area-padding {
+  padding-top: max(16px, var(--sat));
+  padding-right: max(16px, var(--sar));
+  padding-bottom: max(16px, var(--sab));
+  padding-left: max(16px, var(--sal));
+}
+
+.safe-area-top {
+  padding-top: var(--sat);
+}
+
+.safe-area-bottom {
+  padding-bottom: max(16px, var(--sab));
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* Ajuste específico para main content */
+main.pwa-content {
+  padding-top: calc(1.5rem + var(--sat));
+  padding-bottom: calc(1.5rem + var(--sab));
+  min-height: calc(100vh - 4rem);
 }
 

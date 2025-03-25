@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu } from "lucide-react"
 import Image from "next/image"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -12,9 +13,19 @@ import { cn } from "@/lib/utils"
 
 export function Navbar() {
   const pathname = usePathname()
+  const [isPWA, setIsPWA] = useState(false)
+
+  useEffect(() => {
+    // Detectar si la app está siendo usada como PWA
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         (window.navigator as any).standalone || 
+                         document.referrer.includes('android-app://');
+    
+    setIsPWA(isStandalone);
+  }, []);
 
   return (
-    <header className="border-b bg-background">
+    <header className={`border-b bg-background ${isPWA ? 'safe-area-top' : ''}`}>
       <div className="flex h-16 items-center px-4 sm:px-6">
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center">

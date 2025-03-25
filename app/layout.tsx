@@ -83,10 +83,9 @@ export const viewport: Viewport = {
   themeColor: '#2563EB',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  minimumScale: 1,
-  userScalable: false,
-  // Prevenir zoom automático en inputs en iOS
+  maximumScale: 5,
+  userScalable: true, // Es mejor permitir el zoom para accesibilidad
+  // Soporte para notch y áreas seguras en iOS
   viewportFit: 'cover'
 }
 
@@ -104,6 +103,7 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className={inter.className}>
         <ClientLayout className="">
