@@ -1,15 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next/types"
 import { Inter } from "next/font/google"
-
-import { ThemeProvider } from "@/components/theme-provider"
-import { Navbar } from "@/components/layout/navbar"
-// Importar el componente cliente que maneja la carga dinámica
-import DynamicSidebar from "@/components/layout/dynamic-sidebar"
-import CriticalStyles from "@/components/layout/critical-styles"
-import { Toaster } from "@/components/ui/toaster"
+import ClientLayout from "./client-layout"
 
 import "@/app/globals.css"
+import "@/app/critical-styles.css"
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -105,18 +100,9 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        {/* Componente cliente para estilos críticos */}
-        <CriticalStyles />
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <div className="flex flex-1">
-              <DynamicSidebar />
-              <main className="flex-1 p-6">{children}</main>
-            </div>
-          </div>
-          <Toaster />
-        </ThemeProvider>
+        <ClientLayout className="">
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )
