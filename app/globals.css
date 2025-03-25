@@ -126,27 +126,13 @@ table, .overflow-auto {
   word-break: break-word;
 }
 
-/* Ajustes para PWA en iOS - Safe Areas */
-.safe-area-padding {
-  padding-top: max(16px, var(--sat));
-  padding-right: max(16px, var(--sar));
-  padding-bottom: max(16px, var(--sab));
-  padding-left: max(16px, var(--sal));
+/* Ajustes para PWA en iOS - Solo para el notch */
+.safe-area-padding-top {
+  padding-top: env(safe-area-inset-top);
 }
 
-.safe-area-top {
-  padding-top: var(--sat);
-}
-
-.safe-area-bottom {
-  padding-bottom: max(16px, var(--sab));
-  margin-bottom: env(safe-area-inset-bottom);
-}
-
-/* Ajuste específico para main content */
-main.pwa-content {
-  padding-top: calc(1.5rem + var(--sat));
-  padding-bottom: calc(1.5rem + var(--sab));
-  min-height: calc(100vh - 4rem);
+/* Eliminar otras clases de safe area que no son necesarias */
+.safe-area-padding, .safe-area-top, .safe-area-bottom, main.pwa-content {
+  /* Estas clases no se usarán */
 }
 

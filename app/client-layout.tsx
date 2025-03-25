@@ -37,9 +37,9 @@ export default function ClientLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <div className={`min-h-screen ${isPWA ? 'safe-area-top' : ''}`}>
+      <div className="min-h-screen">
         <Navbar />
-        <main className={`container mx-auto py-6 ${isPWA ? 'pwa-content' : ''} ${className}`}>
+        <main className={`container mx-auto py-6 ${className}`}>
           {children}
         </main>
       </div>

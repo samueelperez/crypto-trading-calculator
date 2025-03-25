@@ -25,8 +25,8 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className={`border-b bg-background ${isPWA ? 'safe-area-top' : ''}`}>
-      <div className="flex h-16 items-center px-4 sm:px-6">
+    <header className={`border-b bg-background ${isPWA ? 'pt-[env(safe-area-inset-top)]' : ''}`} style={{ height: isPWA ? 'calc(4rem + env(safe-area-inset-top))' : '4rem' }}>
+      <div className="h-16 flex items-center px-4 sm:px-6">
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center">
             <Image
