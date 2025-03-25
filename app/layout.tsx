@@ -1,15 +1,11 @@
 import type React from "react"
 import type { Metadata } from "next/types"
 import { Inter } from "next/font/google"
-import dynamic from 'next/dynamic'
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/layout/navbar"
-// Carga diferida de Sidebar para mejorar LCP
-const Sidebar = dynamic(() => import('@/components/layout/sidebar').then(mod => mod.Sidebar), {
-  ssr: false,
-  loading: () => <div className="w-64 h-screen bg-background border-r border-border" />
-})
+// Importar el componente cliente que maneja la carga dinámica
+import DynamicSidebar from "@/components/layout/dynamic-sidebar"
 import { Toaster } from "@/components/ui/toaster"
 
 import "@/app/globals.css"
@@ -119,7 +115,7 @@ export default function RootLayout({
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <div className="flex flex-1">
-              <Sidebar />
+              <DynamicSidebar />
               <main className="flex-1 p-6">{children}</main>
             </div>
           </div>
