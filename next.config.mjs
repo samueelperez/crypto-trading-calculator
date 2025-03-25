@@ -1,5 +1,12 @@
+import withPWA from 'next-pwa';
+
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig = withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development'
+})({
   reactStrictMode: true,
   images: {
     domains: ['assets.coingecko.com'], // Permitir imágenes de CoinGecko
@@ -22,7 +29,7 @@ const nextConfig = {
       },
     ];
   },
-};
+});
 
 export default nextConfig;
 

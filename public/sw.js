@@ -1,0 +1,1 @@
+// Este archivo será generado automáticamente por next-pwa 

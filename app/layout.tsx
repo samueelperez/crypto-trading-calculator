@@ -12,9 +12,32 @@ import "@/app/globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CryptoTrader - Trading Platform",
-  description: "Advanced cryptocurrency trading platform with real-time data and analytics",
-    generator: 'v0.dev'
+  title: 'Crypto Trading Platform',
+  description: 'Una plataforma completa para trading de criptomonedas',
+  manifest: '/manifest.json',
+  themeColor: '#2563EB',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'CryptoTrading'
+  },
+  formatDetection: {
+    telephone: false
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false
+  },
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-touch-icon': [
+      { url: '/icons/apple-icon-180x180.png', sizes: '180x180' },
+      { url: '/icons/apple-icon-192x192.png', sizes: '192x192' },
+      { url: '/icons/apple-icon-512x512.png', sizes: '512x512' }
+    ]
+  }
 }
 
 export default function RootLayout({
