@@ -30,13 +30,15 @@ export const metadata: Metadata = {
     maximumScale: 1,
     userScalable: false
   },
-  other: {
-    'apple-mobile-web-app-capable': 'yes',
-    'apple-touch-icon': [
+  icons: {
+    apple: [
       { url: '/icons/apple-icon-180x180.png', sizes: '180x180' },
       { url: '/icons/apple-icon-192x192.png', sizes: '192x192' },
       { url: '/icons/apple-icon-512x512.png', sizes: '512x512' }
     ]
+  },
+  other: {
+    'apple-mobile-web-app-capable': 'yes'
   }
 }
 
