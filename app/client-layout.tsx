@@ -1,49 +1,32 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { ThemeProvider } from "next-themes";
-import { Toaster } from "@/components/ui/toaster";
-
+import React from "react";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/layout/navbar";
-import { StatusBar } from "@/components/layout/status-bar";
-
-interface ClientLayoutProps {
-  children: React.ReactNode;
-  className?: string;
-}
+import DynamicSidebar from "@/components/layout/dynamic-sidebar";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function ClientLayout({
   children,
-  className = "",
-}: ClientLayoutProps) {
-  const [isPWA, setIsPWA] = useState(false);
-
-  useEffect(() => {
-    // Detectar si la app está siendo usada como PWA
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         (window.navigator as any).standalone || 
-                         document.referrer.includes('android-app://');
-    
-    setIsPWA(isStandalone);
-    
-    if (isStandalone) {
-      document.documentElement.classList.add('is-pwa');
-    }
-  }, []);
-
+  className,
+}: {
+  children: React.ReactNode;
+  className: string;
+}) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <div className="min-h-screen">
-        <StatusBar />
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <style jsx global>{`
+        :root {
+          --background: 224 71% 4%;
+          --foreground: 213 31% 91%;
+        }
+      `}</style>
+      <div className="flex min-h-screen flex-col">
         <Navbar />
-        <main className={`container mx-auto py-6 ${className}`}>
-          {children}
-        </main>
+        <div className="flex flex-1">
+          <DynamicSidebar />
+          <main className={`flex-1 p-6 ${className}`}>{children}</main>
+        </div>
       </div>
       <Toaster />
     </ThemeProvider>
