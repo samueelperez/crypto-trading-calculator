@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 
 import { Navbar } from "@/components/layout/navbar";
+import { StatusBar } from "@/components/layout/status-bar";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -38,6 +39,7 @@ export default function ClientLayout({
       disableTransitionOnChange
     >
       <div className="min-h-screen">
+        <StatusBar />
         <Navbar />
         <main className={`container mx-auto py-6 ${className}`}>
           {children}
