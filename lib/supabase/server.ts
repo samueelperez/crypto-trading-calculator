@@ -3,7 +3,7 @@ import type { CookieOptions } from "@supabase/ssr"
 import type { Database } from "@/types/supabase"
 import { cookies } from "next/headers"
 
-// Verifico que este archivo exporte correctamente la función createClient
+// Función corregida para manejo de cookies
 export const createClient = async () => {
   const cookieStore = cookies()
   
@@ -15,14 +15,14 @@ export const createClient = async () => {
         get(name: string) {
           return cookieStore.get(name)?.value
         },
-        set(name: string, value: string, options: { path: string; maxAge: number; domain?: string; sameSite?: string; secure?: boolean }) {
+        set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options })
           } catch (error) {
             // Manejo silencioso para SSR
           }
         },
-        remove(name: string, options: { path: string; domain?: string; sameSite?: string; secure?: boolean }) {
+        remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options, maxAge: 0 })
           } catch (error) {
@@ -91,7 +91,7 @@ export async function getUserDetails() {
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', user.id as string)
       .single()
     
     return {

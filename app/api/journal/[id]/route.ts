@@ -3,14 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-interface Params {
-  params: {
-    id: string
-  }
-}
-
-// GET: Obtener una entrada de journal por ID
-export async function GET(request: NextRequest, { params }: Params) {
+// La tipado correcto para Next.js 15
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -43,7 +40,10 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 // PUT: Actualizar una entrada de journal
-export async function PUT(request: NextRequest, { params }: Params) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -78,7 +78,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
 }
 
 // DELETE: Eliminar una entrada de journal
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
