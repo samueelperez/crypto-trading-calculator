@@ -3,15 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-type Params = { id: string }
-
 // GET /api/portfolio/:id - Obtener detalles de un portafolio
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Params }
-) {
+export async function GET(request: NextRequest, { params }: any) {
   try {
-    const { id } = params
+    const id = params.id
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -54,12 +49,9 @@ export async function GET(
 }
 
 // PUT /api/portfolio/:id - Actualizar un portafolio
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Params }
-) {
+export async function PUT(request: NextRequest, { params }: any) {
   try {
-    const { id } = params
+    const id = params.id
     const body = await request.json()
     
     const supabase = await createClient()
@@ -102,12 +94,9 @@ export async function PUT(
 }
 
 // DELETE /api/portfolio/:id - Eliminar un portafolio
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Params }
-) {
+export async function DELETE(request: NextRequest, { params }: any) {
   try {
-    const { id } = params
+    const id = params.id
     
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

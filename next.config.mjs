@@ -125,7 +125,7 @@ const nextConfig = withPWA({
   images: {
     domains: ['assets.coingecko.com'], // Permitir imágenes de CoinGecko
   },
-  // Ignorar errores de TypeScript durante la compilación
+  // Ignorar errores de TypeScript durante la compilación - IMPORTANTE
   typescript: {
     ignoreBuildErrors: true,
   },

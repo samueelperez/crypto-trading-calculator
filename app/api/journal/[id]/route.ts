@@ -3,19 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-// Usar la declaración exacta de tipos que Next.js 15 espera
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(
-  request: NextRequest,
-  context: RouteContext
-) {
+// Simplificar al máximo la definición de los handlers
+export async function GET(request: NextRequest, { params }: any) {
   try {
-    const { id } = context.params
+    const id = params.id
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -47,12 +38,9 @@ export async function GET(
 }
 
 // PUT: Actualizar una entrada de journal
-export async function PUT(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function PUT(request: NextRequest, { params }: any) {
   try {
-    const { id } = context.params
+    const id = params.id
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -86,12 +74,9 @@ export async function PUT(
 }
 
 // DELETE: Eliminar una entrada de journal
-export async function DELETE(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function DELETE(request: NextRequest, { params }: any) {
   try {
-    const { id } = context.params
+    const id = params.id
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
