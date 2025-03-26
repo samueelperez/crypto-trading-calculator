@@ -23,9 +23,17 @@ const nextConfig = {
       },
     ],
   },
-  // Experimental: Usar los últimos compiladores de Next.js
+  // Configuración para forzar que todas las rutas sean dinámicas
+  output: 'standalone',
   experimental: {
     // swcPlugins: [['next-superjson-plugin', {}]],
+  },
+  // Forzar que todas las rutas sean dinámicas
+  staticPageGenerationTimeout: 120,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
 }
 

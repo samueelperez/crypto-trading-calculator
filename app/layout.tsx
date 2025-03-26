@@ -1,28 +1,39 @@
-import type React from "react"
-import type { Metadata, Viewport } from "next/types"
-import { Inter } from "next/font/google"
-import ClientLayout from "./client-layout"
-import { AuthProvider } from "@/components/auth-provider"
+import './globals.css'
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { ThemeProvider } from '@/components/theme-provider'
+import { defaultMetadata } from './config'
+// Importamos dinámico de config pero con nombre diferente para evitar conflictos
+import { dynamic as dynamicConfig } from './config'
+import { AuthProvider } from '@/components/auth-provider'
 import { cn } from "@/lib/utils"
-import { ThemeProvider } from "@/components/ui/theme-provider"
+import { Viewport } from "next/types"
 import { Navbar } from "@/components/layout/navbar"
 import { Sidebar } from "@/components/layout/sidebar"
 // Importamos directamente de las acciones del servidor que ya implementan verificaciones seguras
 import { getServerSession } from "@/lib/actions/auth-actions"
 
-import "@/app/globals.css"
 import "@/app/critical-styles.css"
 
-const inter = Inter({ 
-  subsets: ["latin"],
-  display: 'swap', // Mejora FCP
-  preload: true
-})
+// Configurar fuente Inter
+const inter = Inter({ subsets: ['latin'] })
 
-// Metadatos base de la aplicación
+// Forzar que el layout sea dinámico
+export const dynamic = 'force-dynamic'
+
+// Configuración del viewport (separada según recomendación de Next.js 15)
+export const viewport: Viewport = {
+  themeColor: '#2563EB',
+  width: 'device-width',
+  initialScale: 1,
+  // Solo configuramos viewport-fit: cover para el notch
+  viewportFit: 'cover'
+}
+
 export const metadata: Metadata = {
-  title: 'Crypto Trading Platform',
-  description: 'Una plataforma completa para trading de criptomonedas',
+  title: defaultMetadata.title,
+  description: defaultMetadata.description,
+  keywords: defaultMetadata.keywords,
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -85,15 +96,7 @@ export const metadata: Metadata = {
   }
 }
 
-// Configuración del viewport (separada según recomendación de Next.js 15)
-export const viewport: Viewport = {
-  themeColor: '#2563EB',
-  width: 'device-width',
-  initialScale: 1,
-  // Solo configuramos viewport-fit: cover para el notch
-  viewportFit: 'cover'
-}
-
+// Añadimos 'async' a la función para poder usar await
 export default async function RootLayout({
   children,
 }: {
@@ -105,11 +108,16 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased", inter.className)}>
-        <AuthProvider initialSession={session}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider initialSession={session}>
             {children}
-          </ThemeProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

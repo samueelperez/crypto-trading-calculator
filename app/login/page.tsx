@@ -1,14 +1,14 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
-
+import { Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react'
+import { createClientBrowser } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 import { serverSignIn } from '@/lib/actions/auth-actions'
 import { refreshAuthTokenIfNeeded } from '@/lib/actions/token-refresh'
 import { supabase } from '@/lib/supabase-client'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 const formSchema = z.object({
   email: z.string().email({
@@ -39,6 +40,25 @@ const getBaseUrl = () => {
     return window.location.origin
   }
   return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+}
+
+// Exportar opción dynamic para forzar renderizado dinámico
+export const dynamic = 'force-dynamic'
+
+// Componente para extraer parámetros de búsqueda de forma segura
+function LoginMessageHandler() {
+  const searchParams = useSearchParams()
+  const message = searchParams.get('message')
+  
+  if (!message) return null
+  
+  return (
+    <Alert variant="destructive" className="mb-4">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertTitle>Atención</AlertTitle>
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
+  )
 }
 
 export default function LoginPage() {
@@ -265,7 +285,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 sm:px-6">
+    <div className="container flex justify-center items-center min-h-[calc(100vh-200px)]">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <div className="mx-auto flex justify-center">
@@ -286,6 +306,11 @@ export default function LoginPage() {
               : "Registra una cuenta nueva para empezar"}
           </p>
         </div>
+        
+        {/* Usar Suspense para envolver el componente que usa useSearchParams */}
+        <Suspense fallback={<div className="mb-4">Cargando...</div>}>
+          <LoginMessageHandler />
+        </Suspense>
         
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
