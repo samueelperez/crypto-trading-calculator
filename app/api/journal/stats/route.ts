@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,104 +7,61 @@ export const dynamic = 'force-dynamic';
  * GET /api/journal/stats
  * Obtiene estadísticas resumidas del diario de trading
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    console.log('GET /api/journal/stats');
-
-    // Crear cliente de Supabase usando el cliente local
-    const supabase = createClient(cookies());
-
-    // Obtener todas las operaciones cerradas
-    const { data: closedTrades, error } = await supabase
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+    
+    // Obtener estadísticas de entradas del diario
+    const { data, error } = await supabase
       .from('journal_entries')
-      .select('*')
-      .eq('status', 'closed')
+      .select('created_at, sentiment, mood')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
-
-    // Manejar error de consulta
+    
     if (error) {
-      console.error('Error al obtener operaciones cerradas:', error);
-      return NextResponse.json(
-        { error: `Error al obtener estadísticas: ${error.message}` },
-        { status: 400 }
-      );
-    }
-
-    // Si no hay operaciones cerradas, devolver estadísticas vacías
-    if (!closedTrades || closedTrades.length === 0) {
-      console.log('No hay operaciones cerradas para calcular estadísticas');
-      return NextResponse.json({
-        stats: {
-          totalTrades: 0,
-          winningTrades: 0,
-          losingTrades: 0,
-          winRate: 0,
-          averageProfit: 0,
-          averageLoss: 0,
-          profitLossRatio: 0,
-          totalProfitLoss: 0,
-        }
-      });
-    }
-
-    console.log(`Calculando estadísticas para ${closedTrades.length} operaciones cerradas`);
-
-    // Calcular estadísticas
-    const winningTrades = closedTrades.filter(trade => (trade.profit_loss || 0) > 0);
-    const losingTrades = closedTrades.filter(trade => (trade.profit_loss || 0) <= 0);
-    
-    const totalProfitLoss = closedTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0);
-    
-    const averageProfit = winningTrades.length 
-      ? winningTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0) / winningTrades.length 
-      : 0;
-    
-    const averageLoss = losingTrades.length 
-      ? Math.abs(losingTrades.reduce((sum, trade) => sum + (trade.profit_loss || 0), 0)) / losingTrades.length 
-      : 0;
-    
-    // Encontrar la mejor y peor operación
-    let bestTrade = null;
-    let worstTrade = null;
-    
-    if (closedTrades.length > 0) {
-      bestTrade = closedTrades.reduce((best, trade) => 
-        (trade.profit_loss || 0) > (best.profit_loss || 0) ? trade : best, closedTrades[0]);
-      
-      worstTrade = closedTrades.reduce((worst, trade) => 
-        (trade.profit_loss || 0) < (worst.profit_loss || 0) ? trade : worst, closedTrades[0]);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
     
-    const stats = {
-      totalTrades: closedTrades.length,
-      winningTrades: winningTrades.length,
-      losingTrades: losingTrades.length,
-      winRate: (winningTrades.length / closedTrades.length) * 100,
-      averageProfit,
-      averageLoss,
-      profitLossRatio: averageLoss ? averageProfit / averageLoss : 0,
-      totalProfitLoss,
-      bestTrade,
-      worstTrade,
-    };
+    // Procesar datos para estadísticas
+    const totalEntries = data.length;
+    const moodCounts = data.reduce((acc: Record<string, number>, entry) => {
+      if (entry.mood) {
+        acc[entry.mood] = (acc[entry.mood] || 0) + 1;
+      }
+      return acc;
+    }, {});
     
-    console.log('Estadísticas calculadas:', {
-      totalTrades: stats.totalTrades,
-      winningTrades: stats.winningTrades,
-      losingTrades: stats.losingTrades,
-      winRate: stats.winRate.toFixed(2) + '%',
-      totalProfitLoss: stats.totalProfitLoss.toFixed(2),
+    const sentimentAverage = data.reduce((sum, entry) => {
+      return sum + (entry.sentiment || 0);
+    }, 0) / (totalEntries || 1);
+    
+    // Estadísticas por semana/mes
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    const entriesLastWeek = data.filter(entry => 
+      new Date(entry.created_at) >= oneWeekAgo
+    ).length;
+    
+    const entriesLastMonth = data.filter(entry => 
+      new Date(entry.created_at) >= oneMonthAgo
+    ).length;
+    
+    return NextResponse.json({ 
+      totalEntries,
+      moodCounts,
+      sentimentAverage,
+      entriesLastWeek,
+      entriesLastMonth
     });
-    
-    // Devolver estadísticas
-    return NextResponse.json({ stats });
-  } catch (e) {
-    // Capturar y registrar cualquier error no manejado
-    const error = e as Error;
-    console.error('Error no manejado en GET /api/journal/stats:', error);
-    return NextResponse.json(
-      { error: `Error interno del servidor: ${error.message}` },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error('Error al obtener estadísticas del diario:', error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 } 

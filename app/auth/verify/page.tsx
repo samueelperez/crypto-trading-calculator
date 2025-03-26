@@ -5,15 +5,61 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { createBrowserClient } from "@supabase/ssr"
 import Link from "next/link"
 import { ArrowLeft, CheckCircle, Clock } from "lucide-react"
+import { Suspense } from 'react'
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function VerifyPage() {
-  const router = useRouter()
+// Componente que usa useSearchParams envuelto en Suspense
+function VerifyContent() {
   const searchParams = useSearchParams()
+  const error = searchParams.get('error')
+  const message = searchParams.get('message')
+  
+  return (
+    <div className="container mx-auto py-8">
+      <div className="max-w-md mx-auto bg-card p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-4">Verificación de Email</h1>
+        
+        {error ? (
+          <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+            <strong>Error:</strong> {error}
+          </div>
+        ) : message ? (
+          <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
+            {message}
+          </div>
+        ) : (
+          <div className="p-4 mb-4 text-sm text-blue-700 bg-blue-100 rounded-lg">
+            Tu email ha sido verificado correctamente. Ya puedes iniciar sesión.
+          </div>
+        )}
+        
+        <div className="mt-6">
+          <a href="/auth/login" className="w-full block text-center py-2 px-4 bg-primary text-primary-foreground rounded hover:bg-primary/80">
+            Ir a Iniciar Sesión
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Página principal que usa Suspense
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto py-8 text-center">Cargando...</div>}>
+      <VerifyContent />
+    </Suspense>
+  )
+}
+
+// Necesario para Next.js: Indicar que esta página es dinámica
+export const dynamic = 'force-dynamic'
+
+function VerifyPageContent() {
+  const router = useRouter()
   const [status, setStatus] = useState<"loading" | "verified" | "error">("loading")
-  const [message, setMessage] = useState("")
 
   useEffect(() => {
     const verifySession = async () => {
@@ -29,7 +75,6 @@ export default function VerifyPage() {
         if (error) {
           console.error("Error de verificación:", error)
           setStatus("error")
-          setMessage(error.message)
           return
         }
         
@@ -42,12 +87,10 @@ export default function VerifyPage() {
           setTimeout(() => router.push("/dashboard"), 1500)
         } else {
           setStatus("error")
-          setMessage("No se pudo verificar tu cuenta. Por favor, intenta iniciar sesión de nuevo.")
         }
       } catch (error: any) {
         console.error("Error:", error)
         setStatus("error")
-        setMessage(error.message || "Ocurrió un error durante la verificación")
       }
     }
 
@@ -66,7 +109,7 @@ export default function VerifyPage() {
           <CardDescription>
             {status === "loading" && "Espera mientras verificamos tu cuenta..."}
             {status === "verified" && "Tu cuenta ha sido verificada correctamente."}
-            {status === "error" && message}
+            {status === "error" && "No se pudo verificar tu cuenta. Por favor, intenta iniciar sesión de nuevo."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-6">

@@ -3,177 +3,67 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/journal - Obtener todas las entradas del diario
 export async function GET(request: NextRequest) {
   try {
-    // Extraer parámetros de consulta
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const type = searchParams.get('type')
-    const asset = searchParams.get('asset')
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-    const limitParam = searchParams.get('limit')
-    const limit = limitParam ? parseInt(limitParam) : undefined
-
-    console.log('GET /api/journal - Parámetros:', { status, type, asset, startDate, endDate, limit })
-
-    // Crear cliente de Supabase
-    const supabase = createClient(cookies())
-
-    // Construir consulta
-    let query = supabase
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+    
+    // Obtener entradas del diario
+    const { data, error } = await supabase
       .from('journal_entries')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-
-    // Aplicar filtros si existen
-    if (status) {
-      query = query.eq('status', status)
-    }
-    if (type) {
-      query = query.eq('type', type)
-    }
-    if (asset) {
-      query = query.ilike('asset', `%${asset}%`)
-    }
-    if (startDate) {
-      query = query.gte('created_at', startDate)
-    }
-    if (endDate) {
-      query = query.lte('created_at', endDate)
-    }
-    if (limit) {
-      query = query.limit(limit)
-    }
-
-    // Ejecutar consulta
-    const { data: entries, error } = await query
-
-    // Manejar errores de la consulta
+    
     if (error) {
-      console.error('Error al obtener entradas del journal:', error)
-      return NextResponse.json(
-        { error: `Error al obtener entradas del journal: ${error.message}` },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    // Devolver resultados
-    console.log(`GET /api/journal - Se encontraron ${entries?.length || 0} entradas`)
-    return NextResponse.json({ entries: entries || [] })
-  } catch (e) {
-    // Capturar y registrar cualquier error no manejado
-    const error = e as Error
-    console.error('Error no manejado en GET /api/journal:', error)
-    return NextResponse.json(
-      { error: `Error interno del servidor: ${error.message}` },
-      { status: 500 }
-    )
+    
+    return NextResponse.json({ entries: data })
+  } catch (error) {
+    console.error('Error al obtener entradas del diario:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
 // POST /api/journal - Crear una nueva entrada en el diario
 export async function POST(request: NextRequest) {
   try {
-    // Parsear el cuerpo de la solicitud
-    let body;
-    try {
-      body = await request.json()
-    } catch (e) {
-      return NextResponse.json(
-        { error: 'El cuerpo de la solicitud no es un JSON válido' },
-        { status: 400 }
-      )
-    }
-
-    console.log('POST /api/journal - Datos recibidos:', body)
-
-    // Validar campos requeridos
-    const requiredFields = [
-      'type', 'asset', 'entry_price', 'stop_loss', 
-      'position_size', 'leverage', 'risk_amount', 'risk_percentage', 'status'
-    ]
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     
-    for (const field of requiredFields) {
-      if (body[field] === undefined) {
-        return NextResponse.json(
-          { error: `Falta el campo requerido: ${field}` },
-          { status: 400 }
-        )
-      }
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
-
-    // Validar valores numéricos
-    const numericFields = ['entry_price', 'stop_loss', 'position_size', 'leverage', 'risk_amount', 'risk_percentage']
-    for (const field of numericFields) {
-      if (isNaN(Number(body[field]))) {
-        return NextResponse.json(
-          { error: `El campo ${field} debe ser un número válido` },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Validar status
-    if (!['planned', 'open', 'closed', 'cancelled'].includes(body.status)) {
-      return NextResponse.json(
-        { error: 'El estado debe ser uno de: planned, open, closed, cancelled' },
-        { status: 400 }
-      )
-    }
-
-    // Crear cliente de Supabase
-    const supabase = createClient(cookies())
-
-    // Guardar en la base de datos
-    const entryData = {
-      type: body.type,
-      asset: body.asset,
-      entry_price: body.entry_price,
-      stop_loss: body.stop_loss,
-      take_profit: body.take_profit || null,
-      position_size: body.position_size,
-      leverage: body.leverage,
-      risk_amount: body.risk_amount,
-      risk_percentage: body.risk_percentage,
-      status: body.status,
-      notes: body.notes || null,
-      exit_price: body.exit_price || null,
-      profit_loss: body.profit_loss || null,
-      created_at: new Date().toISOString(),
-      closed_at: body.closed_at || null,
-    }
-
-    const { data: entry, error } = await supabase
+    
+    const requestData = await request.json()
+    
+    // Insertar nueva entrada
+    const { data, error } = await supabase
       .from('journal_entries')
-      .insert(entryData)
+      .insert([
+        { 
+          user_id: user.id,
+          ...requestData 
+        }
+      ])
       .select()
-      .single()
-
-    // Manejar errores de la inserción
+    
     if (error) {
-      console.error('Error al insertar entrada en el journal:', error)
-      return NextResponse.json(
-        { error: `Error al crear entrada: ${error.message}` },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    // Revalidar la ruta del journal para actualizar la vista
-    revalidatePath('/journal')
-
-    // Devolver la entrada creada
-    console.log('POST /api/journal - Entrada creada con ID:', entry?.id)
-    return NextResponse.json({ entry }, { status: 201 })
-  } catch (e) {
-    // Capturar y registrar cualquier error no manejado
-    const error = e as Error
-    console.error('Error no manejado en POST /api/journal:', error)
-    return NextResponse.json(
-      { error: `Error interno del servidor: ${error.message}` },
-      { status: 500 }
-    )
+    
+    return NextResponse.json({ entry: data[0] })
+  } catch (error) {
+    console.error('Error al crear entrada del diario:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
