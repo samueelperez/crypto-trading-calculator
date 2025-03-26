@@ -2,6 +2,13 @@ import type React from "react"
 import type { Metadata, Viewport } from "next/types"
 import { Inter } from "next/font/google"
 import ClientLayout from "./client-layout"
+import { AuthProvider } from "@/components/auth-provider"
+import { cn } from "@/lib/utils"
+import { ThemeProvider } from "@/components/ui/theme-provider"
+import { Navbar } from "@/components/layout/navbar"
+import { Sidebar } from "@/components/layout/sidebar"
+// Importamos directamente de las acciones del servidor que ya implementan verificaciones seguras
+import { getServerSession } from "@/lib/actions/auth-actions"
 
 import "@/app/globals.css"
 import "@/app/critical-styles.css"
@@ -83,33 +90,40 @@ export const viewport: Viewport = {
   themeColor: '#2563EB',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
-  userScalable: true, // Es mejor permitir el zoom para accesibilidad
-  // Soporte para notch y áreas seguras en iOS
+  // Solo configuramos viewport-fit: cover para el notch
   viewportFit: 'cover'
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
+  // Usamos getServerSession de las acciones del servidor que ya implementa verificaciones seguras
+  const session = await getServerSession();
+  
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Precarga de recursos críticos */}
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-      </head>
-      <body className={inter.className}>
-        <ClientLayout className="">
-          {children}
-        </ClientLayout>
+    <html lang="es" suppressHydrationWarning>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.className)}>
+        <AuthProvider initialSession={session}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )
+}
+
+// Crear un componente separado para el layout con navegación que se usará en todas las páginas excepto la principal
+export function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1">{children}</main>
+      </div>
+    </>
+  );
 }

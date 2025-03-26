@@ -1,47 +1,117 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export interface Database {
   public: {
     Tables: {
-      trades: {
+      profiles: {
         Row: {
           id: string
           created_at: string
-          user_id: string
-          pair: string
-          type: "buy" | "sell"
-          entry_price: number
-          exit_price: number | null
-          amount: number
-          status: "open" | "closed"
-          pnl: number | null
-          notes: string | null
+          updated_at: string
+          email: string
+          first_name: string | null
+          last_name: string | null
+          avatar_url: string | null
+          preferences: Json | null
         }
         Insert: {
-          id?: string
+          id: string
           created_at?: string
-          user_id: string
-          pair: string
-          type: "buy" | "sell"
-          entry_price: number
-          exit_price?: number | null
-          amount: number
-          status?: "open" | "closed"
-          pnl?: number | null
-          notes?: string | null
+          updated_at?: string
+          email: string
+          first_name?: string | null
+          last_name?: string | null
+          avatar_url?: string | null
+          preferences?: Json | null
         }
         Update: {
           id?: string
           created_at?: string
+          updated_at?: string
+          email?: string
+          first_name?: string | null
+          last_name?: string | null
+          avatar_url?: string | null
+          preferences?: Json | null
+        }
+      }
+      user_exchange_keys: {
+        Row: {
+          id: string
+          user_id: string
+          exchange: string
+          api_key: string
+          api_secret: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          exchange: string
+          api_key: string
+          api_secret: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
           user_id?: string
-          pair?: string
-          type?: "buy" | "sell"
-          entry_price?: number
-          exit_price?: number | null
-          amount?: number
-          status?: "open" | "closed"
-          pnl?: number | null
+          exchange?: string
+          api_key?: string
+          api_secret?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      trades: {
+        Row: {
+          id: string
+          user_id: string
+          exchange: string
+          symbol: string
+          side: string
+          quantity: number
+          price: number
+          fee: number
+          timestamp: string
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          exchange: string
+          symbol: string
+          side: string
+          quantity: number
+          price: number
+          fee: number
+          timestamp: string
           notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          exchange?: string
+          symbol?: string
+          side?: string
+          quantity?: number
+          price?: number
+          fee?: number
+          timestamp?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
       journal_entries: {
@@ -167,6 +237,15 @@ export interface Database {
           logo_url?: string | null // Añadimos el campo logo_url
         }
       }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
     }
   }
 }

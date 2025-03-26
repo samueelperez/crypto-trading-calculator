@@ -1,77 +1,43 @@
 import Link from "next/link"
-import { ArrowRight, BarChart3, BookOpen, Calculator } from "lucide-react"
+import { ArrowRight, TrendingUp } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="container mx-auto space-y-12 py-8">
-      <section className="space-y-4 text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">Advanced Crypto Trading Platform</h1>
-        <p className="mx-auto max-w-2xl text-muted-foreground">
-          Track your trades, analyze market data, and optimize your trading strategy with our comprehensive suite of
-          tools.
-        </p>
-        <div className="flex justify-center gap-4 pt-4">
-          <Button asChild size="lg">
-            <Link href="/portfolio">
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+      {/* Hero Section */}
+      <section className="w-full py-24 md:py-32 lg:py-40 flex-grow flex items-center">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="flex flex-col items-center text-center space-y-10 max-w-3xl mx-auto">
+            <div className="inline-block p-4 bg-primary/10 rounded-full mb-4">
+              <TrendingUp className="h-12 w-12 text-primary" />
+            </div>
+            
+            <div className="space-y-6">
+              <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+                Trading de criptomonedas <span className="text-primary">simplificado</span>
+              </h1>
+              <p className="text-xl text-muted-foreground md:text-2xl max-w-2xl mx-auto">
+                La plataforma que necesitas para optimizar tus estrategias de trading y llevar tu inversión al siguiente nivel.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+              <Button asChild size="lg" className="px-8">
+                <Link href="/login">
+                  Crear cuenta
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/login?mode=login">
+                  Iniciar sesión
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
-      </section>
-
-      <section className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <BarChart3 className="h-8 w-8 text-primary" />
-            <CardTitle className="mt-4">Real-time Dashboard</CardTitle>
-            <CardDescription>
-              Monitor cryptocurrency markets with real-time data and customizable charts.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Track price movements, volume, and market trends for informed trading decisions.</p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/dashboard">View Dashboard</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <BookOpen className="h-8 w-8 text-primary" />
-            <CardTitle className="mt-4">Trading Journal</CardTitle>
-            <CardDescription>Record and analyze your trading history to improve your strategy.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Document trades, add notes, and review performance metrics to identify patterns.</p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/journal">Open Journal</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <Calculator className="h-8 w-8 text-primary" />
-            <CardTitle className="mt-4">Risk Calculator</CardTitle>
-            <CardDescription>Calculate position sizes, risk-reward ratios, and potential outcomes.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Optimize your risk management with advanced calculation tools for better results.</p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/calculator">Use Calculator</Link>
-            </Button>
-          </CardFooter>
-        </Card>
       </section>
     </div>
   )
