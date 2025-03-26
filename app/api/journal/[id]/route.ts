@@ -3,10 +3,16 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-// Corregida la sintaxis para parámetros en Next.js 15
+// Usar la declaración exacta de tipos que Next.js 15 espera
+interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const { id } = context.params
@@ -43,7 +49,7 @@ export async function GET(
 // PUT: Actualizar una entrada de journal
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const { id } = context.params
@@ -82,7 +88,7 @@ export async function PUT(
 // DELETE: Eliminar una entrada de journal
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const { id } = context.params
