@@ -145,12 +145,11 @@ export async function DELETE(request: NextRequest) {
       )
     }
     
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
     
     // Verificar autenticación
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
       return NextResponse.json(
         { error: 'No autorizado' },
         { status: 401 }
@@ -164,7 +163,7 @@ export async function DELETE(request: NextRequest) {
       .eq('id', id)
       .single()
     
-    if (!existingEntry || existingEntry.user_id !== session.user.id) {
+    if (!existingEntry || existingEntry.user_id !== user.id) {
       return NextResponse.json(
         { error: 'No autorizado o entrada no encontrada' },
         { status: 403 }

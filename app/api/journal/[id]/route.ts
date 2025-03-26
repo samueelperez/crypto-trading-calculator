@@ -3,12 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-// La tipado correcto para Next.js 15
+// Corregida la sintaxis para parámetros en Next.js 15
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = context.params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -20,7 +21,7 @@ export async function GET(
     const { data, error } = await supabase
       .from('journal_entries')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
@@ -42,9 +43,10 @@ export async function GET(
 // PUT: Actualizar una entrada de journal
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = context.params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -58,7 +60,7 @@ export async function PUT(
     const { data, error } = await supabase
       .from('journal_entries')
       .update(requestData)
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .select()
 
@@ -80,9 +82,10 @@ export async function PUT(
 // DELETE: Eliminar una entrada de journal
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = context.params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -94,7 +97,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('journal_entries')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
 
     if (error) {

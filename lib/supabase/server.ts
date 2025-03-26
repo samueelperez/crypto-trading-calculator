@@ -5,33 +5,50 @@ import { cookies } from "next/headers"
 
 // Función corregida para manejo de cookies
 export const createClient = async () => {
-  const cookieStore = cookies()
-  
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+  try {
+    // Usar await para manejar correctamente la Promise que devuelve cookies()
+    const cookieStore = await cookies()
+    
+    return createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            try {
+              cookieStore.set({ name, value, ...options })
+            } catch (error) {
+              // Manejo silencioso para SSR
+            }
+          },
+          remove(name: string, options: CookieOptions) {
+            try {
+              cookieStore.set({ name, value: '', ...options, maxAge: 0 })
+            } catch (error) {
+              // Manejo silencioso para SSR
+            }
+          },
         },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value, ...options })
-          } catch (error) {
-            // Manejo silencioso para SSR
-          }
+      }
+    )
+  } catch (error) {
+    console.error("Error al crear cliente Supabase:", error)
+    // En caso de error, retornar un cliente sin cookies
+    return createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) { return undefined },
+          set(name: string, value: string, options: CookieOptions) {},
+          remove(name: string, options: CookieOptions) {},
         },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options, maxAge: 0 })
-          } catch (error) {
-            // Manejo silencioso para SSR
-          }
-        },
-      },
-    }
-  )
+      }
+    )
+  }
 }
 
 // Mantener las funciones originales
