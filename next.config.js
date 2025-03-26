@@ -15,7 +15,6 @@ const nextConfig = {
   
   // Opciones estándar
   reactStrictMode: true,
-  swcMinify: true,
 };
 
 module.exports = withPWA(nextConfig); 
