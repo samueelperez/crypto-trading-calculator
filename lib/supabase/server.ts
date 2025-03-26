@@ -5,7 +5,8 @@ import { cookies } from "next/headers"
 
 // Función corregida para manejo de cookies - solo para uso en Server Components
 export const createClient = async () => {
-  const cookieStore = cookies()
+  // Obtenemos el store de cookies (en Next.js 14+ devuelve una Promise)
+  const cookieStore = await cookies()
   
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
