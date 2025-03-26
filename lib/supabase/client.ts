@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
+import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from "@/types/supabase"
 
 // Obtener variables de entorno
@@ -57,6 +58,46 @@ export async function testSupabaseConnection() {
       success: false,
       error: err instanceof Error ? err.message : "Unknown error connecting to Supabase",
     }
+  }
+}
+
+// Cliente para uso en componentes del lado del cliente
+export const createClientBrowser = () => {
+  return createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+
+// Obtener la sesión actual en el navegador
+export const getClientSession = async () => {
+  const supabase = createClientBrowser()
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error) {
+      console.error("Error al obtener sesión en cliente:", error.message)
+      return null
+    }
+    return session
+  } catch (error) {
+    console.error("Error inesperado al obtener sesión en cliente:", error)
+    return null
+  }
+}
+
+// Obtener el usuario actual en el navegador
+export const getClientUser = async () => {
+  const supabase = createClientBrowser()
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error) {
+      console.error("Error al obtener usuario en cliente:", error.message)
+      return null
+    }
+    return user
+  } catch (error) {
+    console.error("Error inesperado al obtener usuario en cliente:", error)
+    return null
   }
 }
 

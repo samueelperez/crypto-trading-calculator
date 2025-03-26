@@ -3,88 +3,53 @@ import type { CookieOptions } from "@supabase/ssr"
 import type { Database } from "@/types/supabase"
 import { cookies } from "next/headers"
 
-// Función corregida para manejo de cookies
+// Función corregida para manejo de cookies - solo para uso en Server Components
 export const createClient = async () => {
-  try {
-    // Usar await para manejar correctamente la Promise que devuelve cookies()
-    const cookieStore = await cookies()
-    
-    return createServerClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            try {
-              cookieStore.set({ name, value, ...options })
-            } catch (error) {
-              // Manejo silencioso para SSR
-            }
-          },
-          remove(name: string, options: CookieOptions) {
-            try {
-              cookieStore.set({ name, value: '', ...options, maxAge: 0 })
-            } catch (error) {
-              // Manejo silencioso para SSR
-            }
-          },
+  const cookieStore = cookies()
+  
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
         },
-      }
-    )
-  } catch (error) {
-    console.error("Error al crear cliente Supabase:", error)
-    // En caso de error, retornar un cliente sin cookies
-    return createServerClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) { return undefined },
-          set(name: string, value: string, options: CookieOptions) {},
-          remove(name: string, options: CookieOptions) {},
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // Manejo de errores cuando las cookies ya están enviadas
+            console.error("Error al establecer cookie:", error)
+          }
         },
-      }
-    )
-  }
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: "", ...options })
+          } catch (error) {
+            console.error("Error al eliminar cookie:", error)
+          }
+        },
+      },
+    }
+  )
 }
 
 // Mantener las funciones originales
 export const createServerSupabaseClient = createClient
 
-/**
- * Obtener la sesión actual de forma segura (App Router)
- * @returns La sesión actual o null si no hay sesión
- */
-export async function getSession() {
+// Función para obtener sesión actual - solo para uso en Server Components
+export const getSession = async () => {
+  const supabase = await createClient()
   try {
-    const supabase = await createClient()
-    
-    // Primera obtenemos la sesión desde las cookies
-    const { data: { session } } = await supabase.auth.getSession()
-    
-    if (!session) {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error) {
+      console.error("Error al obtener sesión:", error.message)
       return null
     }
-    
-    // MEJORA DE SEGURIDAD: Verificamos que el usuario sea válido usando getUser()
-    // que autentica los datos a través del servidor de Supabase
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      console.warn('Sesión potencialmente manipulada detectada: usuario no válido')
-      return null
-    }
-    
-    // Si llegamos aquí, la sesión es válida y el usuario también
-    return {
-      ...session,
-      user // Reemplazamos el usuario de la sesión con el usuario autenticado
-    }
+    return session
   } catch (error) {
-    console.error('Error al obtener la sesión de forma segura:', error)
+    console.error("Error inesperado al obtener sesión:", error)
     return null
   }
 }
@@ -161,5 +126,21 @@ export function createServerSupabaseClientForPages(context: {
       },
     }
   );
+}
+
+// Función para obtener el usuario actual - solo para uso en Server Components
+export const getUser = async () => {
+  const supabase = await createClient()
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error) {
+      console.error("Error al obtener usuario:", error.message)
+      return null
+    }
+    return user
+  } catch (error) {
+    console.error("Error inesperado al obtener usuario:", error)
+    return null
+  }
 }
 
