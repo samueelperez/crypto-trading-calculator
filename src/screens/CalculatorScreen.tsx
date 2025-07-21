@@ -29,9 +29,9 @@ interface LossOption {
 }
 
 const lossOptions: LossOption[] = [
-  { label: '$120', value: '120', amount: 120 },
-  { label: '$60', value: '60', amount: 60 },
-  { label: '$30', value: '30', amount: 30 },
+  { label: '$300', value: '300', amount: 300 },
+  { label: '$170', value: '170', amount: 170 },
+  { label: '$130', value: '130', amount: 130 },
 ];
 
 const leverageOptions = [10, 20, 50];
