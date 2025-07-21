@@ -1,47 +1,30 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { Provider as PaperProvider } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
-import { theme, colors } from './src/theme';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { theme } from './src/theme';
 import CalculatorScreen from './src/screens/CalculatorScreen';
-
-const Stack = createStackNavigator();
+import { Platform, View, StyleSheet } from 'react-native';
 
 export default function App() {
+  const isWeb = Platform.OS === 'web';
+  
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      minHeight: isWeb ? '100vh' : '100%',
+    },
+  });
+
   return (
-    <PaperProvider theme={theme}>
-      <StatusBar style="dark" backgroundColor={colors.background} />
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Calculator"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: colors.card,
-              elevation: 0,
-              shadowOpacity: 0,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-            },
-            headerTintColor: colors.cardForeground,
-            headerTitleStyle: {
-              fontWeight: '600',
-              fontSize: 18,
-            },
-            headerShadowVisible: false,
-            headerTitleAlign: 'center',
-          }}
-        >
-          <Stack.Screen 
-            name="Calculator" 
-            component={CalculatorScreen}
-            options={{ 
-              title: 'Trading Calculator',
-              headerShown: false,
-            }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider theme={theme}>
+        <View style={styles.container}>
+          <StatusBar style="auto" />
+          <CalculatorScreen />
+        </View>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 } 

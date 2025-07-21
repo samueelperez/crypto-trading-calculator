@@ -6,6 +6,7 @@ import {
   Keyboard,
   Dimensions,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import {
   TextInput,
@@ -15,9 +16,10 @@ import {
   useTheme,
   FAB,
   Divider,
+  Surface,
 } from 'react-native-paper';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 interface LossOption {
@@ -82,7 +84,6 @@ export default function CalculatorScreen() {
     const lossPercentage = priceDifference / entry;
 
     // Calcular el tamaño de posición total necesario
-    // Si quieres perder $120 y la pérdida es del 25%, necesitas: $120 ÷ 0.25 = $480
     const positionSizeValue = desiredLoss / lossPercentage;
     setPositionSize(positionSizeValue);
 
@@ -106,117 +107,228 @@ export default function CalculatorScreen() {
     setPositionsByLeverage(positionsCalc);
   };
 
-  const containerStyle = {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: isWeb ? Math.max(20, (width - 600) / 2) : 20,
-  };
-
-  const cardStyle = {
-    marginBottom: 16,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  };
-
-  const inputStyle = {
-    marginBottom: 16,
-  };
-
-  const buttonStyle = {
-    marginTop: 8,
-    marginBottom: 16,
-  };
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      minHeight: isWeb ? '100vh' : '100%',
+    },
+    scrollContainer: {
+      flexGrow: 1,
+      paddingHorizontal: isWeb ? Math.max(20, (width - 800) / 2) : 20,
+      paddingTop: isWeb ? 40 : 60,
+      paddingBottom: isWeb ? 40 : 100,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 32,
+      paddingHorizontal: 20,
+    },
+    title: {
+      fontSize: isWeb ? 32 : 28,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontSize: isWeb ? 16 : 14,
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+    card: {
+      marginBottom: 24,
+      borderRadius: 16,
+      elevation: 2,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    },
+    cardContent: {
+      padding: isWeb ? 32 : 24,
+    },
+    sectionTitle: {
+      fontSize: isWeb ? 20 : 18,
+      fontWeight: '600',
+      color: theme.colors.primary,
+      marginBottom: 20,
+    },
+    inputRow: {
+      flexDirection: isWeb ? 'row' : 'column',
+      gap: 16,
+      marginBottom: 16,
+    },
+    inputColumn: {
+      flex: 1,
+    },
+    input: {
+      backgroundColor: theme.colors.surface,
+      marginBottom: 0,
+    },
+    lossButtonsContainer: {
+      flexDirection: isWeb ? 'row' : 'column',
+      gap: 12,
+      flexWrap: 'wrap',
+    },
+    lossButton: {
+      flex: isWeb ? 1 : undefined,
+      minWidth: isWeb ? 120 : undefined,
+    },
+    calculateButton: {
+      marginTop: 8,
+      marginBottom: 24,
+      paddingVertical: 8,
+    },
+    resultsGrid: {
+      flexDirection: isWeb ? 'row' : 'column',
+      gap: 16,
+      marginBottom: 24,
+    },
+    resultCard: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: theme.colors.surfaceVariant,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    resultLabel: {
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    resultValue: {
+      fontSize: isWeb ? 24 : 20,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
+      textAlign: 'center',
+    },
+    leverageGrid: {
+      flexDirection: isWeb ? 'row' : 'column',
+      gap: 12,
+    },
+    leverageCard: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: theme.colors.surfaceVariant,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    leverageLabel: {
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: 8,
+    },
+    leverageValue: {
+      fontSize: isWeb ? 20 : 18,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
+    },
+    profitValue: {
+      color: theme.colors.tertiary,
+    },
+    lossValue: {
+      color: theme.colors.error,
+    },
+    fab: {
+      position: 'absolute',
+      margin: 16,
+      right: 0,
+      bottom: 0,
+      backgroundColor: theme.colors.primary,
+    },
+  });
 
   return (
-    <View style={containerStyle}>
+    <View style={styles.container}>
       <ScrollView 
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
         keyboardShouldPersistTaps="handled"
+        bounces={true}
+        alwaysBounceVertical={false}
       >
         {/* Header */}
-        <View style={{ marginBottom: 24, alignItems: 'center' }}>
-          <Text variant="headlineMedium" style={{ 
-            color: theme.colors.primary, 
-            fontWeight: 'bold',
-            textAlign: 'center'
-          }}>
+        <View style={styles.header}>
+          <Text style={styles.title}>
             Calculadora de Trading
           </Text>
-          <Text variant="bodyMedium" style={{ 
-            color: theme.colors.onSurfaceVariant,
-            textAlign: 'center',
-            marginTop: 8
-          }}>
+          <Text style={styles.subtitle}>
             Calcula el tamaño de posición para perder exactamente lo que quieres
           </Text>
         </View>
 
         {/* Inputs */}
-        <Card style={cardStyle}>
-          <Card.Content>
-            <Text variant="titleMedium" style={{ marginBottom: 16, color: theme.colors.primary }}>
+        <Card style={styles.card}>
+          <Card.Content style={styles.cardContent}>
+            <Text style={styles.sectionTitle}>
               Precios
             </Text>
             
-            <TextInput
-              label="Precio de entrada"
-              value={entryPrice}
-              onChangeText={setEntryPrice}
-              keyboardType="numeric"
-              mode="outlined"
-              style={inputStyle}
-              placeholder="Ej: 4.00"
-            />
+            <View style={styles.inputRow}>
+              <View style={styles.inputColumn}>
+                <TextInput
+                  label="Precio de entrada"
+                  value={entryPrice}
+                  onChangeText={setEntryPrice}
+                  keyboardType="numeric"
+                  mode="outlined"
+                  style={styles.input}
+                  placeholder="Ej: 4.00"
+                />
+              </View>
+              
+              <View style={styles.inputColumn}>
+                <TextInput
+                  label="Take profit (objetivo)"
+                  value={targetPrice}
+                  onChangeText={setTargetPrice}
+                  keyboardType="numeric"
+                  mode="outlined"
+                  style={styles.input}
+                  placeholder="Ej: 9.00"
+                />
+              </View>
+            </View>
             
-            <TextInput
-              label="Take profit (objetivo)"
-              value={targetPrice}
-              onChangeText={setTargetPrice}
-              keyboardType="numeric"
-              mode="outlined"
-              style={inputStyle}
-              placeholder="Ej: 9.00"
-            />
-            
-            <TextInput
-              label="Stop loss"
-              value={stopLoss}
-              onChangeText={setStopLoss}
-              keyboardType="numeric"
-              mode="outlined"
-              style={inputStyle}
-              placeholder="Ej: 3.00"
-            />
+            <View style={styles.inputRow}>
+              <View style={styles.inputColumn}>
+                <TextInput
+                  label="Stop loss"
+                  value={stopLoss}
+                  onChangeText={setStopLoss}
+                  keyboardType="numeric"
+                  mode="outlined"
+                  style={styles.input}
+                  placeholder="Ej: 3.00"
+                />
+              </View>
+              
+              <View style={styles.inputColumn}>
+                {/* Espacio vacío para mantener el layout */}
+              </View>
+            </View>
           </Card.Content>
         </Card>
 
         {/* Loss Selection */}
-        <Card style={cardStyle}>
-          <Card.Content>
-            <Text variant="titleMedium" style={{ marginBottom: 16, color: theme.colors.primary }}>
+        <Card style={styles.card}>
+          <Card.Content style={styles.cardContent}>
+            <Text style={styles.sectionTitle}>
               ¿Cuánto quieres perder?
             </Text>
             
-            <View style={{ 
-              flexDirection: isWeb ? 'row' : 'column', 
-              gap: 12,
-              flexWrap: 'wrap'
-            }}>
+            <View style={styles.lossButtonsContainer}>
               {lossOptions.map((option) => (
                 <Button
                   key={option.value}
                   mode={selectedLoss === option.value ? "contained" : "outlined"}
                   onPress={() => setSelectedLoss(option.value)}
-                  style={{ 
-                    flex: isWeb ? 1 : undefined,
-                    minWidth: isWeb ? 100 : undefined
-                  }}
+                  style={styles.lossButton}
+                  contentStyle={{ paddingVertical: 8 }}
                 >
                   {option.label}
                 </Button>
@@ -229,8 +341,8 @@ export default function CalculatorScreen() {
         <Button
           mode="contained"
           onPress={calculatePosition}
-          style={buttonStyle}
-          contentStyle={{ paddingVertical: 8 }}
+          style={styles.calculateButton}
+          contentStyle={{ paddingVertical: 12 }}
           labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
         >
           Calcular Posición
@@ -239,62 +351,49 @@ export default function CalculatorScreen() {
         {/* Results */}
         {positionSize > 0 && (
           <>
-            <Card style={cardStyle}>
-              <Card.Content>
-                <Text variant="titleMedium" style={{ marginBottom: 16, color: theme.colors.primary }}>
+            <Card style={styles.card}>
+              <Card.Content style={styles.cardContent}>
+                <Text style={styles.sectionTitle}>
                   Resultados
                 </Text>
                 
-                <View style={{ marginBottom: 16 }}>
-                  <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-                    Tamaño de posición total:
-                  </Text>
-                  <Text variant="headlineSmall" style={{ 
-                    color: theme.colors.primary, 
-                    fontWeight: 'bold' 
-                  }}>
-                    ${positionSize.toFixed(2)}
-                  </Text>
-                </View>
-
-                <Divider style={{ marginVertical: 12 }} />
-
-                <View style={{ marginBottom: 16 }}>
-                  <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-                    Ratio R/R:
-                  </Text>
-                  <Text variant="headlineSmall" style={{ 
-                    color: theme.colors.primary, 
-                    fontWeight: 'bold' 
-                  }}>
-                    {riskRewardRatio.toFixed(2)}:1
-                  </Text>
-                </View>
-
-                <View style={{ 
-                  flexDirection: isWeb ? 'row' : 'column',
-                  gap: 16
-                }}>
-                  <View style={{ flex: 1 }}>
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                      Ganancia potencial:
+                <View style={styles.resultsGrid}>
+                  <View style={styles.resultCard}>
+                    <Text style={styles.resultLabel}>
+                      Tamaño de posición total
                     </Text>
-                    <Text variant="titleMedium" style={{ 
-                      color: theme.colors.tertiary, 
-                      fontWeight: 'bold' 
-                    }}>
+                    <Text style={styles.resultValue}>
+                      ${positionSize.toFixed(2)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.resultCard}>
+                    <Text style={styles.resultLabel}>
+                      Ratio R/R
+                    </Text>
+                    <Text style={styles.resultValue}>
+                      {riskRewardRatio.toFixed(2)}:1
+                    </Text>
+                  </View>
+                </View>
+
+                <Divider style={{ marginVertical: 16 }} />
+
+                <View style={styles.resultsGrid}>
+                  <View style={styles.resultCard}>
+                    <Text style={styles.resultLabel}>
+                      Ganancia potencial
+                    </Text>
+                    <Text style={[styles.resultValue, styles.profitValue]}>
                       ${potentialProfit.toFixed(2)}
                     </Text>
                   </View>
                   
-                  <View style={{ flex: 1 }}>
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                      Pérdida potencial:
+                  <View style={styles.resultCard}>
+                    <Text style={styles.resultLabel}>
+                      Pérdida potencial
                     </Text>
-                    <Text variant="titleMedium" style={{ 
-                      color: theme.colors.error, 
-                      fontWeight: 'bold' 
-                    }}>
+                    <Text style={[styles.resultValue, styles.lossValue]}>
                       ${potentialLoss.toFixed(2)}
                     </Text>
                   </View>
@@ -303,31 +402,19 @@ export default function CalculatorScreen() {
             </Card>
 
             {/* Leverage Options */}
-            <Card style={cardStyle}>
-              <Card.Content>
-                <Text variant="titleMedium" style={{ marginBottom: 16, color: theme.colors.primary }}>
+            <Card style={styles.card}>
+              <Card.Content style={styles.cardContent}>
+                <Text style={styles.sectionTitle}>
                   Margen requerido por apalancamiento
                 </Text>
                 
-                <View style={{ 
-                  flexDirection: isWeb ? 'row' : 'column',
-                  gap: 12
-                }}>
+                <View style={styles.leverageGrid}>
                   {leverageOptions.map((leverage) => (
-                    <View key={leverage} style={{ 
-                      flex: 1,
-                      padding: 16,
-                      backgroundColor: theme.colors.surfaceVariant,
-                      borderRadius: 12,
-                      alignItems: 'center'
-                    }}>
-                      <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                    <View key={leverage} style={styles.leverageCard}>
+                      <Text style={styles.leverageLabel}>
                         {leverage}x
                       </Text>
-                      <Text variant="titleLarge" style={{ 
-                        color: theme.colors.primary, 
-                        fontWeight: 'bold' 
-                      }}>
+                      <Text style={styles.leverageValue}>
                         ${positionsByLeverage[`${leverage}x`]?.toFixed(2) || '0.00'}
                       </Text>
                     </View>
@@ -343,13 +430,7 @@ export default function CalculatorScreen() {
       {!isWeb && (
         <FAB
           icon="calculator"
-          style={{
-            position: 'absolute',
-            margin: 16,
-            right: 0,
-            bottom: 0,
-            backgroundColor: theme.colors.primary,
-          }}
+          style={styles.fab}
           onPress={calculatePosition}
         />
       )}
