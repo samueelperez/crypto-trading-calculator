@@ -1,8 +1,0 @@
-Este es un archivo de texto placeholder.
-Para resolver el error 404 de favicon.ico:
-
-1. Copia el archivo icon.svg a favicon.ico
-2. O ejecuta: node scripts/create-basic-favicon.js
-3. O simplemente coloca un archivo favicon.ico real en esta ubicación
-
-Este archivo de texto está aquí temporalmente para evitar errores 404. 
